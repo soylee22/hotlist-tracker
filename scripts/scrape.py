@@ -57,48 +57,27 @@ def scrape_top(n: int = 30) -> list[dict]:
         )
         page = ctx.new_page()
         page.goto(HOTLIST_URL, wait_until="domcontentloaded", timeout=60_000)
-        # Wait for the leaderboard list to render. The page is a SPA.
         page.wait_for_load_state("networkidle", timeout=60_000)
         page.wait_for_timeout(2500)
 
-        # T212 virtualises the leaderboard. Scroll the inner scroll area
-        # to render lower-ranked rows. Try several scroll strategies to
-        # accommodate different DOM structures.
-        try:
-            for y in (1000, 2500, 4000, 6000, 8000):
-                page.evaluate(f"() => window.scrollTo(0, {y})")
-                page.wait_for_timeout(350)
-            # Try scrolling any internal scrollable container too.
-            page.evaluate(
-                "() => { document.querySelectorAll('*').forEach(el => {"
-                " if (el.scrollHeight > el.clientHeight + 50) el.scrollTop = el.scrollHeight; }); }"
-            )
-            page.wait_for_timeout(800)
-            page.evaluate("() => window.scrollTo(0, 0)")
-            page.wait_for_timeout(500)
-        except Exception:
-            pass
+        # T212 virtualises the leaderboard: rows are mounted only when in
+        # the viewport. We scroll incrementally and capture rows at each
+        # position, merging by user count.
+        accumulated: dict[int, dict] = {}
 
-        # Strategy: walk up from each user-count text node to a row container,
-        # and capture the row's structured textContent. Then parse with regex
-        # on the Python side, which is far more robust than ad-hoc DOM walks.
-        raw = page.evaluate(
-            """
+        def _extract_visible_rows():
+            return page.evaluate(
+                """
             () => {
               const numRe = /^[\\d]{1,3}(,[\\d]{3})+$/;
               const isLeaf = el => el.children.length === 0;
               const candidates = Array.from(document.querySelectorAll('*'))
                 .filter(el => isLeaf(el) && numRe.test((el.textContent || '').trim()));
-
               const rows = [];
               const seen = new Set();
               for (const el of candidates) {
                 const users = parseInt(el.textContent.replace(/,/g, ''), 10);
                 if (!Number.isFinite(users) || users < 5000) continue;
-
-                // Walk up to find the smallest parent that contains BOTH
-                // the user-count text AND at least 3 chars of other content
-                // (i.e., a name or ticker).
                 const userTxt = el.textContent.trim();
                 let parent = el.parentElement;
                 let chosen = null;
@@ -107,27 +86,50 @@ def scrape_top(n: int = 30) -> list[dict]:
                   const txt = (parent.textContent || '').replace(/\\s+/g, ' ').trim();
                   if (txt.length === 0) continue;
                   if (!txt.includes(userTxt)) continue;
-                  // Must contain other content beyond just the user count.
                   const stripped = txt.replace(userTxt, '').trim();
                   if (stripped.length < 3) continue;
-                  // First match wins (smallest containing parent).
                   if (txt.length < chosenLen && txt.length <= 200) {
                     chosen = txt;
                     chosenLen = txt.length;
-                    if (chosenLen < 60) break;  // good enough, single row
+                    if (chosenLen < 60) break;
                   }
-                  if (txt.length > 200) break;  // walked into multi-row
+                  if (txt.length > 200) break;
                 }
                 if (!chosen) continue;
-                // Dedup keyed on user count alone (one row per unique count).
                 if (seen.has(users)) continue;
                 seen.add(users);
-                rows.push({ raw: chosen, users, len: chosenLen });
+                rows.push({ raw: chosen, users });
               }
               return rows;
             }
-            """
-        )
+                """
+            )
+
+        # Initial extract at top.
+        for r in _extract_visible_rows():
+            accumulated[r["users"]] = r
+
+        # Scroll incrementally and capture again at each position.
+        for y in range(400, 6000, 500):
+            page.evaluate(f"() => window.scrollTo(0, {y})")
+            page.wait_for_timeout(280)
+            for r in _extract_visible_rows():
+                accumulated.setdefault(r["users"], r)
+
+        # Also try internal scrollable containers (some SPAs use inner scrolls).
+        try:
+            page.evaluate(
+                "() => { document.querySelectorAll('*').forEach(el => {"
+                " if (el.scrollHeight > el.clientHeight + 50)"
+                " el.scrollTop = el.scrollTop + 800; }); }"
+            )
+            page.wait_for_timeout(500)
+            for r in _extract_visible_rows():
+                accumulated.setdefault(r["users"], r)
+        except Exception:
+            pass
+
+        raw = list(accumulated.values())
         rows = _parse_raw_rows(raw, n)
         browser.close()
     return rows
@@ -141,18 +143,24 @@ _ROW_RE = re.compile(
 
 
 def _split_ticker_name(rest: str) -> tuple[str, str]:
-    """Given a string like 'NVDANvidia' or 'JPMJPMorgan Chase & Co',
-    split into (ticker, name).
+    """Given a string like 'NVDANvidia' or 'JPMJPMorgan Chase & Co' or
+    'IBMIBM' or 'BPBP', split into (ticker, name).
 
     Strategy:
-    1. Try a known-tricky-ticker prefix match (handles JPM, AGNC, SGLN where
-       the lowercase-letter heuristic fails).
+    0. If rest is X+X with identical halves (IBM/IBM doubling), split there.
+    1. Try a known-tricky-ticker prefix match (handles JPM, AGNC, SGLN).
     2. Fall back to: ticker is the leading run of uppercase chars, name
-       starts at the first lowercase letter (with the preceding uppercase
-       letter belonging to the name as its initial capital).
+       starts at the first lowercase letter.
     """
     if not rest:
         return "", ""
+
+    # Strategy 0: doubled identical token (IBM|IBM, BP|BP)
+    n = len(rest)
+    if n % 2 == 0 and n >= 4:
+        half = n // 2
+        if rest[:half] == rest[half:] and rest[:half].isupper():
+            return rest[:half], rest[:half]
 
     # Strategy 1: tricky known prefixes
     for px in TRICKY_PREFIXES:
@@ -180,8 +188,18 @@ def _parse_raw_rows(raw_rows: list[dict], n: int) -> list[dict]:
         rest = m.group("rest")
         users = int(m.group("users").replace(",", ""))
         ticker, name = _split_ticker_name(rest)
-        # Clean up name; drop any stray leading punctuation.
         name = name.strip().strip(",")
+        # Single-token names (IBM, BP, AMD, etc.) where the ticker IS the
+        # name. Fall back to using the ticker as the display name.
+        if not name and ticker:
+            # If the rest contains the ticker repeated (e.g. "BPBP"), trim.
+            if rest.startswith(ticker * 2):
+                name = ticker
+            elif rest == ticker:
+                name = ticker
+            else:
+                # Some other split issue; take ticker as name.
+                name = ticker
         if not name:
             continue
         parsed.append({"page_rank": rank, "ticker": ticker, "name": name, "users": users})
