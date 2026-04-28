@@ -46,6 +46,13 @@ jobs:
       - name: Render dashboard
         run: python scripts/render.py
 
+      - name: Send daily digest email
+        run: python scripts/email_digest.py
+        env:
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          DASHBOARD_URL: https://soylee22.github.io/hotlist-tracker/
+        continue-on-error: true
+
       - name: Commit data and dashboard
         run: |
           git config user.name "github-actions[bot]"

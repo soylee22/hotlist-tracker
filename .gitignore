@@ -7,3 +7,4 @@ venv/
 .playwright/
 *.log
 node_modules/
+dashboard/_email_preview.html
