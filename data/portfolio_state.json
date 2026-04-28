@@ -87,7 +87,18 @@
     }
   ],
   "candidate_queue": [],
-  "exit_watch": {},
+  "exit_watch": {
+    "NVDA": 0,
+    "MSFT": 0,
+    "AAPL": 0,
+    "AMZN": 0,
+    "TSLA": 0,
+    "META": 0,
+    "GOOGL": 0,
+    "RR.L": 0,
+    "KO": 0,
+    "PLTR": 0
+  },
   "trade_log_ref": "data/trade_log.csv",
   "history_ref": "data/hotlist_history.csv",
   "perf_ref": "data/performance.csv",
