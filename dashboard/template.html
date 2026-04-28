@@ -280,8 +280,18 @@
     {% for r in basket %}
       <tr>
         <td><span class="ticker">{{ r.ticker }}</span><br><span class="name">{{ r.name }}</span></td>
-        <td class="num">{{ '{:,}'.format(r.users) }}</td>
-        <td class="num">#{{ r.rank }}</td>
+        <td class="num">
+          {{ '{:,}'.format(r.users) }}
+          {% if r.delta_1d_users is not none %}
+          <div style="font-size:10px; color:{{ '#2F5C39' if r.delta_1d_users > 0 else '#B7372E' if r.delta_1d_users < 0 else '#76695E' }}; font-weight:600;">{{ '+' if r.delta_1d_users > 0 else '' }}{{ '{:,}'.format(r.delta_1d_users) }}</div>
+          {% endif %}
+        </td>
+        <td class="num">
+          #{{ r.rank_filtered or r.rank }}
+          {% if r.rank_change is not none %}
+          <span style="margin-left:4px; font-size:11px; font-weight:700; color:{{ '#2F5C39' if r.rank_change > 0 else '#B7372E' if r.rank_change < 0 else '#76695E' }};">{% if r.rank_change > 0 %}↑{{ r.rank_change }}{% elif r.rank_change < 0 %}↓{{ -r.rank_change }}{% else %}→{% endif %}</span>
+          {% endif %}
+        </td>
         <td class="num">
           <span class="weight-bar" style="width: {{ (r.weight_pct or 0) * 2 }}px"></span>
           {{ r.weight_pct or 0 }}%

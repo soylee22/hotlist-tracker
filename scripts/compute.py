@@ -204,11 +204,25 @@ def compute_state(history: pd.DataFrame, state: dict) -> dict:
 
 
 def deltas_for_basket(history: pd.DataFrame, state: dict) -> list[dict]:
-    """For each basket ticker, compute deltas: 1d, 7d, 30d, YTD, since-inception."""
+    """For each basket ticker, compute deltas: 1d (users + %), 7d, 30d,
+    YTD, since-inception. Also rank changes within the filtered top-10."""
     if history.empty:
         return []
     today = max(history["date"].unique())
+    yesterday = today - dt.timedelta(days=1)
     inception = pd.to_datetime(state.get("inception_date") or today).date()
+
+    # Filtered (single-stock) ranks for today and yesterday — used for
+    # rank-change arrows. Rank in the top-10 universe excluding ETFs.
+    today_top = _top10_singles(history[history["date"] == today])
+    today_ranks = dict(zip(today_top["ticker"], today_top["filtered_rank"].astype(int))) if not today_top.empty else {}
+    yesterday_df = history[history["date"] == yesterday]
+    yesterday_ranks = {}
+    if not yesterday_df.empty:
+        yt = _top10_singles(yesterday_df)
+        if not yt.empty:
+            yesterday_ranks = dict(zip(yt["ticker"], yt["filtered_rank"].astype(int)))
+
     out = []
     for b in state.get("basket", []):
         t = b["ticker"]
@@ -233,12 +247,27 @@ def deltas_for_basket(history: pd.DataFrame, state: dict) -> list[dict]:
                 return None
             return round((curr - base) / base * 100, 2)
 
+        # Absolute user-count delta vs yesterday
+        delta_1d_users = (latest - d1) if d1 is not None else None
+
+        # Rank change vs yesterday (filtered single-stock universe).
+        # Positive = moved UP (rank number decreased, e.g. #3 -> #2 = +1).
+        rank_filt_today = today_ranks.get(t)
+        rank_filt_yesterday = yesterday_ranks.get(t)
+        rank_change = None
+        if rank_filt_today is not None and rank_filt_yesterday is not None:
+            rank_change = rank_filt_yesterday - rank_filt_today
+
         out.append({
             "ticker": t,
             "name": b["name"],
             "users": latest,
             "rank": latest_rank,
+            "rank_filtered": rank_filt_today,
+            "rank_yesterday_filtered": rank_filt_yesterday,
+            "rank_change": rank_change,
             "weight_pct": int(b.get("weight_pct", 0)),
+            "delta_1d_users": delta_1d_users,
             "delta_1d_pct": pct(latest, d1),
             "delta_7d_pct": pct(latest, d7),
             "delta_30d_pct": pct(latest, d30),
@@ -249,24 +278,48 @@ def deltas_for_basket(history: pd.DataFrame, state: dict) -> list[dict]:
 
 
 def watch_list(history: pd.DataFrame, state: dict, n: int = 20) -> list[dict]:
-    """Top 11..n single-stocks not currently held — the early warning list."""
+    """Top 11..n single-stocks not currently held — the early warning list.
+    Includes user-count delta and rank-change vs yesterday when available."""
     if history.empty:
         return []
     today = max(history["date"].unique())
+    yesterday = today - dt.timedelta(days=1)
     today_df = history[(history["date"] == today) & (~history["is_excluded"])]
     held = {b["ticker"] for b in state.get("basket", [])}
     sorted_df = today_df.sort_values("users", ascending=False).reset_index(drop=True)
+
+    # Yesterday's same-universe ranks for rank-change arrows
+    yesterday_df = history[(history["date"] == yesterday) & (~history["is_excluded"])]
+    yesterday_ranked = yesterday_df.sort_values("users", ascending=False).reset_index(drop=True)
+    yesterday_users_by_t = dict(zip(yesterday_ranked["ticker"], yesterday_ranked["users"].astype(int))) if not yesterday_ranked.empty else {}
+    yesterday_rank_by_t = {}
+    if not yesterday_ranked.empty:
+        for i, row in yesterday_ranked.iterrows():
+            yesterday_rank_by_t[row["ticker"]] = int(i + 1)
+
     out = []
     for i, row in sorted_df.iterrows():
         if row["ticker"] in held:
             continue
-        days_in = _consecutive_days(history, row["ticker"], _ticker_in_top10)
+        t = row["ticker"]
+        days_in = _consecutive_days(history, t, _ticker_in_top10)
+        rank_today = int(i + 1)
+        rank_yest = yesterday_rank_by_t.get(t)
+        rank_change = (rank_yest - rank_today) if rank_yest is not None else None
+        users_today = int(row["users"])
+        users_yest = yesterday_users_by_t.get(t)
+        delta_users = (users_today - users_yest) if users_yest is not None else None
+        is_new = (rank_yest is None) and (yesterday_rank_by_t != {})
+
         out.append({
-            "ticker": row["ticker"],
+            "ticker": t,
             "name": row["name"],
-            "users": int(row["users"]),
-            "filtered_rank": int(i + 1),  # 0-based to 1-based; this counts in the ALL-not-held list
+            "users": users_today,
+            "filtered_rank": rank_today,
             "days_in_top10": days_in,
+            "delta_1d_users": delta_users,
+            "rank_change": rank_change,
+            "is_new": is_new,
         })
         if len(out) >= n:
             break

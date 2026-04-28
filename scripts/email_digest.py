@@ -49,6 +49,35 @@ def fmt_pct(v):
     return f"{sign}{v:.1f}%"
 
 
+def fmt_user_delta(v):
+    """Format absolute user-count delta with sign + thousands separator."""
+    if v is None:
+        return ""
+    sign = "+" if v > 0 else ""
+    return f"{sign}{v:,}"
+
+
+def fmt_rank_arrow(change, is_new=False):
+    """Up/down arrow for rank change. Positive = moved UP (lower rank number)."""
+    if is_new:
+        return "NEW"
+    if change is None:
+        return ""
+    if change == 0:
+        return "→"
+    if change > 0:
+        return f"↑{change}"
+    return f"↓{abs(change)}"
+
+
+def rank_color(change, is_new=False):
+    if is_new:
+        return "#B8862F"  # gold for new entries
+    if change is None or change == 0:
+        return "#76695E"
+    return "#2F5C39" if change > 0 else "#B7372E"
+
+
 def delta_color(v):
     if v is None or v == 0:
         return "#76695E"
@@ -136,6 +165,21 @@ def render_html(state: dict, basket_rows: list[dict], watch: list[dict],
     basket_html = ""
     for r in basket_rows:
         wpct = r.get("weight_pct") or 0
+        d1u = r.get("delta_1d_users")
+        rk_change = r.get("rank_change")
+        rk_filt = r.get("rank_filtered")
+
+        # Users cell: count, then on second line a Δ users number when available
+        d1u_html = ""
+        if d1u is not None:
+            d1u_html = f'<div style="font-size:10px; color:{delta_color(d1u)}; font-weight:600; margin-top:1px;">{fmt_user_delta(d1u)}</div>'
+
+        # Rank cell: filtered rank within top-10 single stocks, with arrow when available
+        rank_display = f"#{rk_filt}" if rk_filt is not None else f"#{r['rank']}"
+        arrow_html = ""
+        if rk_change is not None:
+            arrow_html = f'<span style="color:{rank_color(rk_change)}; font-weight:700; margin-left:4px; font-size:11px;">{fmt_rank_arrow(rk_change)}</span>'
+
         delta_cells = ""
         if show_1d:
             delta_cells += _delta_cell(r.get("delta_1d_pct"))
@@ -143,6 +187,7 @@ def render_html(state: dict, basket_rows: list[dict], watch: list[dict],
             delta_cells += _delta_cell(r.get("delta_7d_pct"))
         if show_30d:
             delta_cells += _delta_cell(r.get("delta_30d_pct"))
+
         basket_html += f"""
             <tr>
               <td style="padding:9px 8px; border-bottom:1px solid #E8DFCC;">
@@ -151,7 +196,10 @@ def render_html(state: dict, basket_rows: list[dict], watch: list[dict],
               </td>
               <td style="padding:9px 8px; border-bottom:1px solid #E8DFCC; text-align:right; font-family:Inter,Arial,sans-serif; font-variant-numeric:tabular-nums;">
                 <div style="font-size:13px; color:#1A1715;">{r['users']:,}</div>
-                <div style="font-size:11px; color:#76695E;">#{r['rank']}</div>
+                {d1u_html}
+              </td>
+              <td style="padding:9px 8px; border-bottom:1px solid #E8DFCC; text-align:right; font-family:Inter,Arial,sans-serif; font-variant-numeric:tabular-nums;">
+                <span style="font-size:13px; color:#1A1715; font-weight:600;">{rank_display}</span>{arrow_html}
               </td>
               <td style="padding:9px 8px; border-bottom:1px solid #E8DFCC; text-align:right; font-family:Inter,Arial,sans-serif; font-weight:700; color:#6E1A22;">{wpct}%</td>
               {delta_cells}
@@ -192,20 +240,40 @@ def render_html(state: dict, basket_rows: list[dict], watch: list[dict],
         rows_h = ""
         for w in watch_top:
             days = w.get("days_in_top10", 0)
+            d1u = w.get("delta_1d_users")
+            rk_change = w.get("rank_change")
+            is_new = w.get("is_new", False)
+
+            # Rank cell with arrow (or NEW badge)
+            arrow_html = ""
+            if is_new:
+                arrow_html = '<span style="color:#B8862F; font-weight:700; margin-left:4px; font-size:10px;">NEW</span>'
+            elif rk_change is not None:
+                arrow_html = f'<span style="color:{rank_color(rk_change)}; font-weight:700; margin-left:4px; font-size:10px;">{fmt_rank_arrow(rk_change)}</span>'
+
+            # Users cell with optional Δ
+            d1u_html = ""
+            if d1u is not None:
+                d1u_html = f'<div style="font-size:10px; color:{delta_color(d1u)}; font-weight:600; margin-top:1px;">{fmt_user_delta(d1u)}</div>'
+
             badge = ""
             if days >= HYSTERESIS_DAYS:
                 badge = '<span style="display:inline-block; padding:2px 8px; border-radius:100px; background:#E4EDE5; color:#2F5C39; font-family:Inter,Arial,sans-serif; font-size:10px; text-transform:uppercase; letter-spacing:0.1em; font-weight:700;">Confirmed</span>'
             elif days > 0:
                 badge = f'<span style="color:#B8862F; font-family:Inter,Arial,sans-serif; font-size:11px;">In top 10 for {days}/{HYSTERESIS_DAYS}d</span>'
+
             rows_h += f"""
                 <tr>
-                  <td style="padding:8px 10px; font-family:Inter,Arial,sans-serif; font-size:11px; color:#76695E;">#{w['filtered_rank']}</td>
-                  <td style="padding:8px 10px;">
+                  <td style="padding:8px 10px; font-family:Inter,Arial,sans-serif; font-size:11px; color:#76695E; vertical-align:top;">#{w['filtered_rank']}{arrow_html}</td>
+                  <td style="padding:8px 10px; vertical-align:top;">
                     <span style="font-family:'JetBrains Mono', Menlo, monospace; font-size:12px; color:#6E1A22; font-weight:600;">{w['ticker']}</span>
                     <span style="font-size:13px; color:#1A1715; margin-left:6px;">{w['name']}</span>
                   </td>
-                  <td style="padding:8px 10px; text-align:right; font-family:Inter,Arial,sans-serif; font-variant-numeric:tabular-nums; color:#1A1715;">{w['users']:,}</td>
-                  <td style="padding:8px 10px; text-align:right;">{badge}</td>
+                  <td style="padding:8px 10px; text-align:right; font-family:Inter,Arial,sans-serif; font-variant-numeric:tabular-nums; vertical-align:top;">
+                    <div style="font-size:13px; color:#1A1715;">{w['users']:,}</div>
+                    {d1u_html}
+                  </td>
+                  <td style="padding:8px 10px; text-align:right; vertical-align:top;">{badge}</td>
                 </tr>"""
         watch_html = f"""
             <h2 style="font-family:'Playfair Display', Georgia, serif; font-size:22px; font-weight:700; color:#1A1715; margin:36px 0 8px;">Climbing the ranks</h2>
@@ -273,6 +341,7 @@ def render_html(state: dict, basket_rows: list[dict], watch: list[dict],
             <tr style="background:#F4ECDD;">
               <th style="text-align:left; padding:8px 10px; font-family:Inter,Arial,sans-serif; font-size:9px; text-transform:uppercase; letter-spacing:0.16em; color:#4A413A; border-bottom:2px solid #1A1715;">Stock</th>
               <th style="text-align:right; padding:8px 10px; font-family:Inter,Arial,sans-serif; font-size:9px; text-transform:uppercase; letter-spacing:0.16em; color:#4A413A; border-bottom:2px solid #1A1715;">Users</th>
+              <th style="text-align:right; padding:8px 10px; font-family:Inter,Arial,sans-serif; font-size:9px; text-transform:uppercase; letter-spacing:0.16em; color:#4A413A; border-bottom:2px solid #1A1715;">Rank</th>
               <th style="text-align:right; padding:8px 10px; font-family:Inter,Arial,sans-serif; font-size:9px; text-transform:uppercase; letter-spacing:0.16em; color:#4A413A; border-bottom:2px solid #1A1715;">Wt</th>
               {('<th style="text-align:right; padding:8px 10px; font-family:Inter,Arial,sans-serif; font-size:9px; text-transform:uppercase; letter-spacing:0.16em; color:#4A413A; border-bottom:2px solid #1A1715;">1d</th>') if show_1d else ''}
               {('<th style="text-align:right; padding:8px 10px; font-family:Inter,Arial,sans-serif; font-size:9px; text-transform:uppercase; letter-spacing:0.16em; color:#4A413A; border-bottom:2px solid #1A1715;">7d</th>') if show_7d else ''}
