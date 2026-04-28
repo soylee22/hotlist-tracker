@@ -74,7 +74,7 @@ def compose_subject(state: dict, basket_rows: list[dict], exit_watch: dict) -> s
 
 def render_html(state: dict, basket_rows: list[dict], watch: list[dict],
                 exit_watch_rows: list[dict], perf_df: pd.DataFrame,
-                dashboard_url: str) -> str:
+                dashboard_url: str, history_days: int = 0) -> str:
     today = dt.date.today().isoformat()
     inception = state.get("inception_date") or "—"
     days_tracked = 0
@@ -82,25 +82,67 @@ def render_html(state: dict, basket_rows: list[dict], watch: list[dict],
         days_tracked = (pd.to_datetime(state["last_updated"]).date()
                         - pd.to_datetime(state["inception_date"]).date()).days
 
-    # Headline perf
+    # Determine which delta columns have any data to show. If a column is
+    # all None across the basket, hide it entirely. Avoids the "—" sea
+    # that makes day-1 emails look broken.
+    show_1d  = any(r.get("delta_1d_pct")  is not None for r in basket_rows)
+    show_7d  = any(r.get("delta_7d_pct")  is not None for r in basket_rows)
+    show_30d = any(r.get("delta_30d_pct") is not None for r in basket_rows)
+    is_day_one = history_days <= 1
+
+    # Headline perf — only meaningful with >=2 days of history
     perf_pct = "—"
     vs_bench = "—"
     perf_color = "#76695E"
-    if not perf_df.empty:
+    has_perf = (not perf_df.empty) and (len(perf_df) >= 2)
+    if has_perf:
         last = perf_df.iloc[-1]
         p = float(last["portfolio_return_pct"])
         b = float(last["benchmark_return_pct"])
         diff = p - b
-        perf_pct = ("+" if p >= 0 else "") + f"{p:.1f}%"
-        vs_bench = ("+" if diff >= 0 else "") + f"{diff:.1f}pp"
+        perf_pct = ("+" if p >= 0 else "") + f"{p:.2f}%"
+        vs_bench = ("+" if diff >= 0 else "") + f"{diff:.2f}pp"
         perf_color = "#2F5C39" if p >= 0 else "#B7372E"
 
-    # Basket rows
+    # Day-one banner replaces the "all dashes" experience
+    day_one_banner = ""
+    if is_day_one:
+        day_one_banner = """
+        <table role="presentation" style="width:100%; margin:24px 0 8px;">
+          <tr>
+            <td style="background:#FAF1DC; border-left:4px solid #B8862F; padding:14px 18px;
+                       font-family:'Source Serif 4', Georgia, serif; font-style:italic;
+                       font-size:14px; color:#4A413A; line-height:1.5;">
+              <strong style="font-style:normal; color:#B8862F; text-transform:uppercase;
+                              letter-spacing:0.15em; font-size:10px; font-family:Inter,Arial,sans-serif;">
+                Day 1 of tracking
+              </strong><br>
+              Tonight's snapshot is the inception. Day-over-day, week-over-week and
+              since-inception comparisons populate from tomorrow's run onwards.
+              The performance series will become meaningful over the next 5–7 trading days.
+            </td>
+          </tr>
+        </table>"""
+
+    # Basket rows. Conditionally include delta columns only when at least
+    # one row has a non-None value for that timeframe.
+    def _delta_cell(v):
+        return (
+            f'<td style="padding:9px 8px; border-bottom:1px solid #E8DFCC; text-align:right; '
+            f'font-family:Inter,Arial,sans-serif; font-variant-numeric:tabular-nums; '
+            f'color:{delta_color(v)}; font-weight:600;">{fmt_pct(v)}</td>'
+        )
+
     basket_html = ""
     for r in basket_rows:
         wpct = r.get("weight_pct") or 0
-        d1 = r.get("delta_1d_pct")
-        d7 = r.get("delta_7d_pct")
+        delta_cells = ""
+        if show_1d:
+            delta_cells += _delta_cell(r.get("delta_1d_pct"))
+        if show_7d:
+            delta_cells += _delta_cell(r.get("delta_7d_pct"))
+        if show_30d:
+            delta_cells += _delta_cell(r.get("delta_30d_pct"))
         basket_html += f"""
             <tr>
               <td style="padding:9px 8px; border-bottom:1px solid #E8DFCC;">
@@ -112,8 +154,7 @@ def render_html(state: dict, basket_rows: list[dict], watch: list[dict],
                 <div style="font-size:11px; color:#76695E;">#{r['rank']}</div>
               </td>
               <td style="padding:9px 8px; border-bottom:1px solid #E8DFCC; text-align:right; font-family:Inter,Arial,sans-serif; font-weight:700; color:#6E1A22;">{wpct}%</td>
-              <td style="padding:9px 8px; border-bottom:1px solid #E8DFCC; text-align:right; font-family:Inter,Arial,sans-serif; font-variant-numeric:tabular-nums; color:{delta_color(d1)}; font-weight:600;">{fmt_pct(d1)}</td>
-              <td style="padding:9px 8px; border-bottom:1px solid #E8DFCC; text-align:right; font-family:Inter,Arial,sans-serif; font-variant-numeric:tabular-nums; color:{delta_color(d7)}; font-weight:600;">{fmt_pct(d7)}</td>
+              {delta_cells}
             </tr>"""
 
     # Exit watch
@@ -201,6 +242,8 @@ def render_html(state: dict, basket_rows: list[dict], watch: list[dict],
           Top-10 most-owned single stocks on Trading 212. Ownership-weighted, drift-held, rotated on confirmed exit.
         </p>
 
+        {day_one_banner}
+
         <!-- Stat grid -->
         <table role="presentation" style="width:100%; border-collapse:separate; border-spacing:6px;">
           <tr>
@@ -231,8 +274,9 @@ def render_html(state: dict, basket_rows: list[dict], watch: list[dict],
               <th style="text-align:left; padding:8px 10px; font-family:Inter,Arial,sans-serif; font-size:9px; text-transform:uppercase; letter-spacing:0.16em; color:#4A413A; border-bottom:2px solid #1A1715;">Stock</th>
               <th style="text-align:right; padding:8px 10px; font-family:Inter,Arial,sans-serif; font-size:9px; text-transform:uppercase; letter-spacing:0.16em; color:#4A413A; border-bottom:2px solid #1A1715;">Users</th>
               <th style="text-align:right; padding:8px 10px; font-family:Inter,Arial,sans-serif; font-size:9px; text-transform:uppercase; letter-spacing:0.16em; color:#4A413A; border-bottom:2px solid #1A1715;">Wt</th>
-              <th style="text-align:right; padding:8px 10px; font-family:Inter,Arial,sans-serif; font-size:9px; text-transform:uppercase; letter-spacing:0.16em; color:#4A413A; border-bottom:2px solid #1A1715;">1d</th>
-              <th style="text-align:right; padding:8px 10px; font-family:Inter,Arial,sans-serif; font-size:9px; text-transform:uppercase; letter-spacing:0.16em; color:#4A413A; border-bottom:2px solid #1A1715;">7d</th>
+              {('<th style="text-align:right; padding:8px 10px; font-family:Inter,Arial,sans-serif; font-size:9px; text-transform:uppercase; letter-spacing:0.16em; color:#4A413A; border-bottom:2px solid #1A1715;">1d</th>') if show_1d else ''}
+              {('<th style="text-align:right; padding:8px 10px; font-family:Inter,Arial,sans-serif; font-size:9px; text-transform:uppercase; letter-spacing:0.16em; color:#4A413A; border-bottom:2px solid #1A1715;">7d</th>') if show_7d else ''}
+              {('<th style="text-align:right; padding:8px 10px; font-family:Inter,Arial,sans-serif; font-size:9px; text-transform:uppercase; letter-spacing:0.16em; color:#4A413A; border-bottom:2px solid #1A1715;">30d</th>') if show_30d else ''}
             </tr>
           </thead>
           <tbody>{basket_html}</tbody>
@@ -280,6 +324,7 @@ def main() -> int:
     history = load_history()
     basket_rows = deltas_for_basket(history, state)
     watch = watch_list(history, state)
+    history_days = len(set(history["date"].tolist())) if not history.empty else 0
     exit_watch_rows = [
         {"ticker": k, "days": v}
         for k, v in (state.get("exit_watch") or {}).items()
@@ -289,7 +334,9 @@ def main() -> int:
 
     dashboard_url = os.environ.get("DASHBOARD_URL", DEFAULT_DASH)
     subject = compose_subject(state, basket_rows, dict(state.get("exit_watch") or {}))
-    html = render_html(state, basket_rows, watch, exit_watch_rows, perf_df, dashboard_url)
+    if history_days <= 1:
+        subject = f"Hotlist 10 — {dt.date.today().strftime('%-d %b')} · Day 1 of tracking"
+    html = render_html(state, basket_rows, watch, exit_watch_rows, perf_df, dashboard_url, history_days=history_days)
 
     sender = os.environ.get("DIGEST_FROM", DEFAULT_FROM)
     recipient = os.environ.get("DIGEST_TO", DEFAULT_TO)

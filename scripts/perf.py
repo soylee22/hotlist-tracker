@@ -167,9 +167,14 @@ def simulate(state: dict) -> pd.DataFrame:
     if not history_for_lookup.empty:
         history_for_lookup["date"] = pd.to_datetime(history_for_lookup["date"]).dt.date
     history = history_for_lookup
+    today_d = dt.date.today()
     for ts, row in prices_gbp.iterrows():
         d = ts.date()
         if d < inception_d:
+            continue
+        # yfinance occasionally indexes the latest close to the NEXT
+        # trading day in some timezones. Clamp out anything past today UTC.
+        if d > today_d:
             continue
         # Apply rebalance events on/before this date.
         while trade_events and trade_events[0]["date"] <= d:

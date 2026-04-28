@@ -124,6 +124,7 @@ def main() -> int:
     state = load_state()
     basket_rows = deltas_for_basket(history, state)
     watch = watch_list(history, state)
+    history_days = len(set(history["date"].tolist())) if not history.empty else 0
 
     perf_df = pd.DataFrame()
     if PERF_PATH.exists():
@@ -140,14 +141,23 @@ def main() -> int:
     else:
         days_tracked = 0
 
-    # Headline performance numbers
-    if not perf_df.empty:
+    # Determine which delta columns have any signal (suppress all-empty ones)
+    show_1d  = any(r.get("delta_1d_pct")  is not None for r in basket_rows)
+    show_7d  = any(r.get("delta_7d_pct")  is not None for r in basket_rows)
+    show_30d = any(r.get("delta_30d_pct") is not None for r in basket_rows)
+    show_ytd = any(r.get("delta_ytd_pct") is not None for r in basket_rows)
+    show_inc = any(r.get("delta_inception_pct") is not None for r in basket_rows)
+    is_day_one = history_days <= 1
+
+    # Headline performance numbers (only meaningful with >=2 days of perf data)
+    has_perf = (not perf_df.empty) and (len(perf_df) >= 2)
+    if has_perf:
         last = perf_df.iloc[-1]
         perf_pct_v = float(last["portfolio_return_pct"])
         bm_pct_v = float(last["benchmark_return_pct"])
         diff = perf_pct_v - bm_pct_v
-        perf_pct = ("+" if perf_pct_v >= 0 else "") + f"{perf_pct_v:.1f}%"
-        vs_bench = ("+" if diff >= 0 else "") + f"{diff:.1f}pp"
+        perf_pct = ("+" if perf_pct_v >= 0 else "") + f"{perf_pct_v:.2f}%"
+        vs_bench = ("+" if diff >= 0 else "") + f"{diff:.2f}pp"
         perf_class = "green" if perf_pct_v >= 0 else "red"
         vs_bench_class = "green" if diff >= 0 else "red"
     else:
@@ -183,10 +193,15 @@ def main() -> int:
         vs_bench=vs_bench,
         perf_class=perf_class,
         vs_bench_class=vs_bench_class,
-        perf_svg=perf_svg(perf_df) if not perf_df.empty else "",
+        has_perf=has_perf,
+        perf_svg=perf_svg(perf_df) if has_perf else "",
         trades=read_trades(),
         inception_date=inception or "—",
         last_updated=last_updated,
+        is_day_one=is_day_one,
+        history_days=history_days,
+        show_1d=show_1d, show_7d=show_7d, show_30d=show_30d,
+        show_ytd=show_ytd, show_inc=show_inc,
     )
     OUTPUT.write_text(html)
     print(f"Wrote dashboard to {OUTPUT}")
