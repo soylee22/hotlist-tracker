@@ -1,0 +1,95 @@
+{
+  "inception_date": "2026-04-28",
+  "last_updated": "2026-04-28",
+  "rule_version": "1.0",
+  "rule_description": "Top 10 single-stock Hotlist names, ownership-weighted at entry, hold-and-drift, rotate only on confirmed Hotlist exit (5-day hysteresis), no rebalance, no upper cap.",
+  "hysteresis_days": 5,
+  "basket": [
+    {
+      "ticker": "NVDA",
+      "name": "Nvidia",
+      "rank_at_entry": 1,
+      "users_at_entry": 774306,
+      "weight_at_entry": 0.162874,
+      "entry_date": "2026-04-28"
+    },
+    {
+      "ticker": "MSFT",
+      "name": "Microsoft",
+      "rank_at_entry": 2,
+      "users_at_entry": 656409,
+      "weight_at_entry": 0.138074,
+      "entry_date": "2026-04-28"
+    },
+    {
+      "ticker": "AAPL",
+      "name": "Apple",
+      "rank_at_entry": 3,
+      "users_at_entry": 636544,
+      "weight_at_entry": 0.133896,
+      "entry_date": "2026-04-28"
+    },
+    {
+      "ticker": "AMZN",
+      "name": "Amazon",
+      "rank_at_entry": 4,
+      "users_at_entry": 514112,
+      "weight_at_entry": 0.108142,
+      "entry_date": "2026-04-28"
+    },
+    {
+      "ticker": "TSLA",
+      "name": "Tesla",
+      "rank_at_entry": 5,
+      "users_at_entry": 490614,
+      "weight_at_entry": 0.1032,
+      "entry_date": "2026-04-28"
+    },
+    {
+      "ticker": "META",
+      "name": "Meta Platforms",
+      "rank_at_entry": 6,
+      "users_at_entry": 420615,
+      "weight_at_entry": 0.088476,
+      "entry_date": "2026-04-28"
+    },
+    {
+      "ticker": "GOOGL",
+      "name": "Alphabet (Class A)",
+      "rank_at_entry": 7,
+      "users_at_entry": 415167,
+      "weight_at_entry": 0.08733,
+      "entry_date": "2026-04-28"
+    },
+    {
+      "ticker": "RR.L",
+      "name": "Rolls-Royce",
+      "rank_at_entry": 8,
+      "users_at_entry": 286474,
+      "weight_at_entry": 0.060259,
+      "entry_date": "2026-04-28"
+    },
+    {
+      "ticker": "KO",
+      "name": "Coca-Cola",
+      "rank_at_entry": 9,
+      "users_at_entry": 280080,
+      "weight_at_entry": 0.058914,
+      "entry_date": "2026-04-28"
+    },
+    {
+      "ticker": "PLTR",
+      "name": "Palantir",
+      "rank_at_entry": 10,
+      "users_at_entry": 279705,
+      "weight_at_entry": 0.058835,
+      "entry_date": "2026-04-28"
+    }
+  ],
+  "candidate_queue": [],
+  "exit_watch": {},
+  "trade_log_ref": "data/trade_log.csv",
+  "history_ref": "data/hotlist_history.csv",
+  "perf_ref": "data/performance.csv",
+  "benchmark_ref": "data/benchmarks/vuag.csv"
+}

@@ -1,0 +1,615 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Hotlist 10 — Live Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #FBF6EE; --paper-2: #F4ECDD; --paper-3: #EDE2CD;
+    --ink: #15110E; --ink-soft: #4A413A; --ink-mute: #76695E;
+    --rule: #D9CFBE; --rule-strong: #A89A82;
+    --burgundy: #6E1A22; --burgundy-soft: #9B2A33; --burgundy-pale: #F4E4E5;
+    --forest: #2F5C39; --forest-pale: #E4EDE5;
+    --gold: #B8862F; --gold-pale: #FAF1DC;
+    --red: #B7372E; --red-pale: #FCE9E7;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--paper); }
+  body {
+    color: var(--ink);
+    font-family: 'Source Serif 4', Charter, Georgia, serif;
+    font-size: 17px; line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 48px 28px 80px; }
+
+  /* Masthead */
+  .masthead {
+    border-top: 6px solid var(--burgundy);
+    border-bottom: 1px solid var(--burgundy);
+    padding: 14px 0; margin-bottom: 36px;
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-family: 'Inter', sans-serif; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.2em; font-weight: 600;
+    color: var(--burgundy);
+  }
+  .masthead .left strong { color: var(--ink); }
+
+  h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 900; font-size: 56px; line-height: 1; letter-spacing: -0.02em;
+    margin: 0 0 8px;
+  }
+  h1 em { font-style: italic; font-weight: 400; color: var(--burgundy); }
+  .deck {
+    font-family: 'Source Serif 4', serif;
+    font-style: italic; font-size: 20px; color: var(--ink-soft);
+    margin: 0 0 36px;
+  }
+
+  /* Stat grid */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin: 28px 0 36px;
+  }
+  @media (max-width: 720px) { .stats { grid-template-columns: 1fr 1fr; } }
+  .stat {
+    background: var(--paper-2);
+    padding: 16px 20px;
+    border-top: 3px solid var(--burgundy);
+  }
+  .stat .v {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 32px; font-weight: 700; color: var(--burgundy);
+    line-height: 1; display: block; margin-bottom: 6px;
+  }
+  .stat .v.green { color: var(--forest); }
+  .stat .v.red   { color: var(--red); }
+  .stat .l {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.18em;
+    color: var(--ink-mute); font-weight: 600;
+  }
+
+  /* Section */
+  .section-marker {
+    display: flex; align-items: baseline; gap: 16px;
+    margin: 56px 0 6px; padding-top: 16px;
+    border-top: 3px double var(--burgundy);
+  }
+  .section-marker .num {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 13px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.3em; color: var(--burgundy);
+  }
+  .section-marker .label {
+    font-family: 'Inter', sans-serif; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.22em;
+    color: var(--ink-mute); font-weight: 600;
+  }
+  h2 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 36px; font-weight: 700; margin: 6px 0 20px;
+    letter-spacing: -0.01em;
+  }
+  h2 em { font-style: italic; color: var(--burgundy); font-weight: 400; }
+
+  /* Tables */
+  table {
+    width: 100%; border-collapse: collapse;
+    font-family: 'Inter', sans-serif; font-size: 13.5px;
+    margin: 16px 0 28px;
+  }
+  th {
+    text-align: left; text-transform: uppercase; font-size: 10px;
+    letter-spacing: 0.16em; color: var(--ink-soft);
+    border-bottom: 2px solid var(--ink); padding: 10px 12px; font-weight: 700;
+  }
+  td {
+    padding: 10px 12px; border-bottom: 1px solid var(--rule);
+    vertical-align: middle;
+  }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td .ticker {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    color: var(--burgundy); font-weight: 600;
+  }
+  td.name { font-weight: 600; color: var(--ink); }
+  td.delta-pos { color: var(--forest); font-weight: 600; }
+  td.delta-neg { color: var(--red); font-weight: 600; }
+  td.delta-zero { color: var(--ink-mute); }
+
+  .weight-bar {
+    display: inline-block; vertical-align: middle;
+    height: 8px; background: var(--burgundy); border-radius: 1px;
+    margin-right: 8px;
+  }
+
+  /* Watchlist */
+  .watchlist tr td:first-child { width: 8%; }
+
+  /* Trade log */
+  .trade-log td:first-child {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    color: var(--ink-mute);
+  }
+
+  /* Empty state */
+  .empty {
+    background: var(--paper-3); padding: 24px;
+    text-align: center; color: var(--ink-mute); font-style: italic;
+    border-radius: 2px;
+  }
+
+  /* Perf chart container */
+  .chart {
+    background: var(--paper-2); padding: 24px; margin: 16px 0 28px;
+    border: 1px solid var(--rule);
+  }
+  .chart svg { width: 100%; height: auto; display: block; }
+  .legend {
+    font-family: 'Inter', sans-serif; font-size: 12px;
+    margin-top: 8px; display: flex; gap: 18px; color: var(--ink-soft);
+  }
+  .legend .swatch {
+    display: inline-block; width: 14px; height: 4px;
+    margin-right: 6px; vertical-align: middle;
+  }
+  .legend .pf { background: var(--burgundy); }
+  .legend .bm { background: var(--gold); }
+
+  /* Rule card */
+  .rule-card {
+    background: var(--burgundy); color: white; padding: 24px 28px;
+    margin: 24px 0; border-left: 6px solid var(--gold);
+  }
+  .rule-card h3 {
+    font-family: 'Inter', sans-serif; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.22em;
+    margin: 0 0 14px; opacity: 0.8; font-weight: 700;
+  }
+  .rule-card ol { margin: 0; padding-left: 22px; }
+  .rule-card ol li {
+    font-family: 'Source Serif 4', serif; font-size: 16px;
+    line-height: 1.5; margin-bottom: 8px;
+  }
+  .rule-card ol li strong { font-weight: 700; }
+
+  /* Status pills */
+  .pill {
+    display: inline-block; padding: 2px 8px; border-radius: 100px;
+    font-family: 'Inter', sans-serif; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.12em; font-weight: 700;
+  }
+  .pill.ok { background: var(--forest-pale); color: var(--forest); }
+  .pill.warn { background: var(--gold-pale); color: var(--gold); }
+  .pill.alert { background: var(--red-pale); color: var(--red); }
+
+  /* Footer */
+  .foot {
+    margin-top: 56px; padding-top: 24px;
+    border-top: 1px solid var(--rule);
+    font-family: 'Source Serif 4', serif; font-style: italic;
+    color: var(--ink-mute); font-size: 14px; text-align: center;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <div class="left"><strong>THE HOTLIST 10</strong> &nbsp;·&nbsp; Live Tracker · Rule v1.0</div>
+    <div class="right">2026-04-28</div>
+  </div>
+
+  <h1>The Hotlist 10 <em>— Live</em></h1>
+  <p class="deck">Top-10 most-owned single stocks on Trading 212. Ownership-weighted, drift-held, rotated only on confirmed Hotlist exit.</p>
+
+  <div class="stats">
+    <div class="stat">
+      <span class="v">10</span>
+      <span class="l">Stocks held</span>
+    </div>
+    <div class="stat">
+      <span class="v">0</span>
+      <span class="l">Days since inception</span>
+    </div>
+    <div class="stat">
+      <span class="v green">+0.0%</span>
+      <span class="l">Portfolio return</span>
+    </div>
+    <div class="stat">
+      <span class="v green">+0.0pp</span>
+      <span class="l">vs VUAG.L</span>
+    </div>
+  </div>
+
+  <div class="rule-card">
+    <h3>The rule, in five lines</h3>
+    <ol>
+      <li><strong>Universe.</strong> Top 10 most-owned single stocks on the T212 Hotlist (ETFs and trackers excluded).</li>
+      <li><strong>Initial weight.</strong> Ownership-weighted at inception. <code>w = users<sub>i</sub> / Σ users</code>.</li>
+      <li><strong>Drift policy.</strong> Hold and let drift. No periodic rebalance. No upper cap.</li>
+      <li><strong>Trigger.</strong> A held stock outside the Top 10 for 5 consecutive scrapes triggers a sale.</li>
+      <li><strong>Action.</strong> Sell the exited stock, buy the highest-ranked confirmed entrant with the proceeds.</li>
+    </ol>
+  </div>
+
+  <!-- ============== BASKET ============== -->
+  <div class="section-marker">
+    <span class="num">Section I</span>
+    <span class="label">The Basket</span>
+  </div>
+  <h2>Current <em>holdings</em></h2>
+
+  
+  <table>
+    <thead>
+      <tr>
+        <th>Stock</th>
+        <th class="num">Users</th>
+        <th class="num">Rank</th>
+        <th class="num">Weight</th>
+        <th class="num">1d</th>
+        <th class="num">7d</th>
+        <th class="num">30d</th>
+        <th class="num">YTD</th>
+        <th class="num">Since inception</th>
+      </tr>
+    </thead>
+    <tbody>
+    
+      <tr>
+        <td><span class="ticker">NVDA</span><br><span class="name">Nvidia</span></td>
+        <td class="num">774,306</td>
+        <td class="num">#1</td>
+        <td class="num">
+          <span class="weight-bar" style="width: 32.574799999999996px"></span>
+          16.29%
+        </td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">0.0%</td>
+      </tr>
+    
+      <tr>
+        <td><span class="ticker">MSFT</span><br><span class="name">Microsoft</span></td>
+        <td class="num">656,409</td>
+        <td class="num">#2</td>
+        <td class="num">
+          <span class="weight-bar" style="width: 27.6148px"></span>
+          13.81%
+        </td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">0.0%</td>
+      </tr>
+    
+      <tr>
+        <td><span class="ticker">AAPL</span><br><span class="name">Apple</span></td>
+        <td class="num">636,544</td>
+        <td class="num">#4</td>
+        <td class="num">
+          <span class="weight-bar" style="width: 26.779199999999996px"></span>
+          13.39%
+        </td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">0.0%</td>
+      </tr>
+    
+      <tr>
+        <td><span class="ticker">AMZN</span><br><span class="name">Amazon</span></td>
+        <td class="num">514,112</td>
+        <td class="num">#5</td>
+        <td class="num">
+          <span class="weight-bar" style="width: 21.6284px"></span>
+          10.81%
+        </td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">0.0%</td>
+      </tr>
+    
+      <tr>
+        <td><span class="ticker">TSLA</span><br><span class="name">Tesla</span></td>
+        <td class="num">490,614</td>
+        <td class="num">#6</td>
+        <td class="num">
+          <span class="weight-bar" style="width: 20.64px"></span>
+          10.32%
+        </td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">0.0%</td>
+      </tr>
+    
+      <tr>
+        <td><span class="ticker">META</span><br><span class="name">Meta Platforms</span></td>
+        <td class="num">420,615</td>
+        <td class="num">#7</td>
+        <td class="num">
+          <span class="weight-bar" style="width: 17.6952px"></span>
+          8.85%
+        </td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">0.0%</td>
+      </tr>
+    
+      <tr>
+        <td><span class="ticker">GOOGL</span><br><span class="name">Alphabet (Class A)</span></td>
+        <td class="num">415,167</td>
+        <td class="num">#8</td>
+        <td class="num">
+          <span class="weight-bar" style="width: 17.466px"></span>
+          8.73%
+        </td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">0.0%</td>
+      </tr>
+    
+      <tr>
+        <td><span class="ticker">RR.L</span><br><span class="name">Rolls-Royce</span></td>
+        <td class="num">286,474</td>
+        <td class="num">#12</td>
+        <td class="num">
+          <span class="weight-bar" style="width: 12.0518px"></span>
+          6.03%
+        </td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">0.0%</td>
+      </tr>
+    
+      <tr>
+        <td><span class="ticker">KO</span><br><span class="name">Coca-Cola</span></td>
+        <td class="num">280,080</td>
+        <td class="num">#13</td>
+        <td class="num">
+          <span class="weight-bar" style="width: 11.7828px"></span>
+          5.89%
+        </td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">0.0%</td>
+      </tr>
+    
+      <tr>
+        <td><span class="ticker">PLTR</span><br><span class="name">Palantir</span></td>
+        <td class="num">279,705</td>
+        <td class="num">#14</td>
+        <td class="num">
+          <span class="weight-bar" style="width: 11.767px"></span>
+          5.88%
+        </td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">—</td>
+        <td class="num delta-zero">0.0%</td>
+      </tr>
+    
+    </tbody>
+  </table>
+  
+
+  <!-- ============== EXIT WATCH ============== -->
+  <div class="section-marker">
+    <span class="num">Section II</span>
+    <span class="label">Exit Watch</span>
+  </div>
+  <h2>Held names <em>outside the top 10</em></h2>
+
+  
+  <div class="empty">All held names are currently inside the Top 10 single-stocks list.</div>
+  
+
+  <!-- ============== WATCHLIST ============== -->
+  <div class="section-marker">
+    <span class="num">Section III</span>
+    <span class="label">Outside The Wall</span>
+  </div>
+  <h2>Names <em>climbing the ranks</em></h2>
+
+  
+  <table class="watchlist">
+    <thead>
+      <tr>
+        <th class="num">#</th>
+        <th>Stock</th>
+        <th class="num">Users</th>
+        <th class="num">Days in top 10</th>
+        <th>Candidate?</th>
+      </tr>
+    </thead>
+    <tbody>
+    
+      <tr>
+        <td class="num">11</td>
+        <td><span class="ticker">O</span> &nbsp; <span class="name">Realty Income</span></td>
+        <td class="num">252,615</td>
+        <td class="num">0/5</td>
+        <td><span class="pill"></span></td>
+      </tr>
+    
+      <tr>
+        <td class="num">12</td>
+        <td><span class="ticker">JNJ</span> &nbsp; <span class="name">Johnson &amp; Johnson</span></td>
+        <td class="num">224,360</td>
+        <td class="num">0/5</td>
+        <td><span class="pill"></span></td>
+      </tr>
+    
+      <tr>
+        <td class="num">13</td>
+        <td><span class="ticker">JPM</span> &nbsp; <span class="name">JPMorgan Chase &amp; Co</span></td>
+        <td class="num">224,258</td>
+        <td class="num">0/5</td>
+        <td><span class="pill"></span></td>
+      </tr>
+    
+      <tr>
+        <td class="num">14</td>
+        <td><span class="ticker">MCD</span> &nbsp; <span class="name">McDonald&#39;s</span></td>
+        <td class="num">221,215</td>
+        <td class="num">0/5</td>
+        <td><span class="pill"></span></td>
+      </tr>
+    
+      <tr>
+        <td class="num">15</td>
+        <td><span class="ticker">AMD</span> &nbsp; <span class="name">Advanced Micro Devices</span></td>
+        <td class="num">221,133</td>
+        <td class="num">0/5</td>
+        <td><span class="pill"></span></td>
+      </tr>
+    
+      <tr>
+        <td class="num">16</td>
+        <td><span class="ticker">CSCO</span> &nbsp; <span class="name">Cisco Systems</span></td>
+        <td class="num">211,966</td>
+        <td class="num">0/5</td>
+        <td><span class="pill"></span></td>
+      </tr>
+    
+      <tr>
+        <td class="num">17</td>
+        <td><span class="ticker">CVX</span> &nbsp; <span class="name">Chevron</span></td>
+        <td class="num">210,273</td>
+        <td class="num">0/5</td>
+        <td><span class="pill"></span></td>
+      </tr>
+    
+      <tr>
+        <td class="num">18</td>
+        <td><span class="ticker">PEP</span> &nbsp; <span class="name">PepsiCo</span></td>
+        <td class="num">200,793</td>
+        <td class="num">0/5</td>
+        <td><span class="pill"></span></td>
+      </tr>
+    
+      <tr>
+        <td class="num">19</td>
+        <td><span class="ticker">AVGO</span> &nbsp; <span class="name">Broadcom</span></td>
+        <td class="num">198,863</td>
+        <td class="num">0/5</td>
+        <td><span class="pill"></span></td>
+      </tr>
+    
+      <tr>
+        <td class="num">20</td>
+        <td><span class="ticker">MA</span> &nbsp; <span class="name">Mastercard</span></td>
+        <td class="num">193,347</td>
+        <td class="num">0/5</td>
+        <td><span class="pill"></span></td>
+      </tr>
+    
+      <tr>
+        <td class="num">21</td>
+        <td><span class="ticker">WMT</span> &nbsp; <span class="name">Walmart</span></td>
+        <td class="num">192,377</td>
+        <td class="num">0/5</td>
+        <td><span class="pill"></span></td>
+      </tr>
+    
+      <tr>
+        <td class="num">22</td>
+        <td><span class="ticker">PG</span> &nbsp; <span class="name">Procter &amp; Gamble</span></td>
+        <td class="num">191,483</td>
+        <td class="num">0/5</td>
+        <td><span class="pill"></span></td>
+      </tr>
+    
+      <tr>
+        <td class="num">23</td>
+        <td><span class="ticker">MAIN</span> &nbsp; <span class="name">Main Street Capital</span></td>
+        <td class="num">177,251</td>
+        <td class="num">0/5</td>
+        <td><span class="pill"></span></td>
+      </tr>
+    
+      <tr>
+        <td class="num">24</td>
+        <td><span class="ticker">AGNC</span> &nbsp; <span class="name">AGNC Investment</span></td>
+        <td class="num">172,620</td>
+        <td class="num">0/5</td>
+        <td><span class="pill"></span></td>
+      </tr>
+    
+      <tr>
+        <td class="num">25</td>
+        <td><span class="ticker">BLK</span> &nbsp; <span class="name">BlackRock</span></td>
+        <td class="num">172,368</td>
+        <td class="num">0/5</td>
+        <td><span class="pill"></span></td>
+      </tr>
+    
+      <tr>
+        <td class="num">26</td>
+        <td><span class="ticker">GD</span> &nbsp; <span class="name">General Dynamics</span></td>
+        <td class="num">167,413</td>
+        <td class="num">0/5</td>
+        <td><span class="pill"></span></td>
+      </tr>
+    
+    </tbody>
+  </table>
+  
+
+  <!-- ============== PERFORMANCE ============== -->
+  <div class="section-marker">
+    <span class="num">Section IV</span>
+    <span class="label">Performance</span>
+  </div>
+  <h2>Portfolio vs <em>VUAG.L</em></h2>
+
+  
+  <div class="empty">Performance chart will populate once the perf series has at least 2 days of data.</div>
+  
+
+  <!-- ============== TRADE LOG ============== -->
+  <div class="section-marker">
+    <span class="num">Section V</span>
+    <span class="label">Trade Log</span>
+  </div>
+  <h2>Rotation <em>history</em></h2>
+
+  
+  <div class="empty">No rotations yet. The basket has held its inception composition.</div>
+  
+
+  <div class="foot">
+    Inception: 2026-04-28 &nbsp;·&nbsp; Hysteresis: 5 days &nbsp;·&nbsp; Last updated: 2026-04-28<br>
+    A rule I follow, not investment advice. Past performance does not predict future returns.
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,24 @@
+{
+  "comment": "Tickers and name patterns excluded from the basket. Top-10 rule applies to single stocks only — these are filtered out.",
+  "tickers": [
+    "VUAG", "VUSA", "VWRP", "VWRL", "VHYL", "VFEM", "VEVE", "VUKE",
+    "IGLN", "SGLN", "PHGP",
+    "EQQQ", "CSPX", "SWDA", "EIMI", "ISF",
+    "IUSA", "IUKD", "IDVY"
+  ],
+  "name_patterns": [
+    "Vanguard",
+    "iShares",
+    "SPDR",
+    "Invesco",
+    "Lyxor",
+    "Xtrackers",
+    "HSBC ETF",
+    "Amundi",
+    "WisdomTree",
+    "Physical Gold",
+    "Physical Silver",
+    "ETF",
+    "UCITS"
+  ]
+}
