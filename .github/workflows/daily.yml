@@ -2,14 +2,25 @@ name: Hotlist daily
 
 on:
   schedule:
-    # 21:00 UTC = 22:00 BST / 21:00 GMT. After US close.
-    - cron: "0 21 * * *"
+    # GitHub Actions scheduled crons are best-effort and frequently delayed
+    # 30+ minutes during peak load. Three trigger times for redundancy;
+    # concurrency control + email idempotency prevent duplicate work.
+    - cron: "0 21 * * *"   # 21:00 UTC primary (after US close)
+    - cron: "30 21 * * *"  # 21:30 UTC backup 1
+    - cron: "0 22 * * *"   # 22:00 UTC backup 2
   workflow_dispatch: {}
 
 permissions:
   contents: write
   pages: write
   id-token: write
+
+# Only one run at a time. Queued runs wait. Prevents the race condition
+# where two workflows committing the same files within seconds of each
+# other reject one of the pushes.
+concurrency:
+  group: hotlist-daily
+  cancel-in-progress: false
 
 jobs:
   scrape-and-publish:
@@ -60,10 +71,20 @@ jobs:
           git add data/ dashboard/index.html
           if git diff --staged --quiet; then
             echo "Nothing to commit."
-          else
-            git commit -m "daily: hotlist update $(date -u +%Y-%m-%d)"
-            git push
+            exit 0
           fi
+          git commit -m "daily: hotlist update $(date -u +%Y-%m-%d)"
+          # Retry push with rebase on conflict (handles edge case of
+          # manual push during workflow run despite concurrency lock).
+          for attempt in 1 2 3; do
+            if git push; then
+              exit 0
+            fi
+            echo "Push rejected (attempt $attempt), rebasing on origin/main..."
+            git pull --rebase origin main || git rebase --abort
+            sleep 3
+          done
+          git push  # final attempt, fail loudly if still conflicting
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

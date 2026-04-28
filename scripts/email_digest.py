@@ -32,6 +32,7 @@ STATE_PATH = ROOT / "data" / "portfolio_state.json"
 HISTORY_PATH = ROOT / "data" / "hotlist_history.csv"
 PERF_PATH = ROOT / "data" / "performance.csv"
 TRADE_LOG = ROOT / "data" / "trade_log.csv"
+SENT_MARKER = ROOT / "data" / ".last_email_date"
 
 sys.path.insert(0, str(ROOT / "scripts"))
 from compute import deltas_for_basket, watch_list, load_history, load_state, HYSTERESIS_DAYS  # noqa: E402
@@ -264,6 +265,17 @@ def render_html(state: dict, basket_rows: list[dict], watch: list[dict],
 
 
 def main() -> int:
+    # Idempotency guard: skip if today's email has already been sent.
+    # Marker file gets committed with the rest of data/, so subsequent
+    # runs on the same UTC date see today's marker and exit silently.
+    today = dt.date.today().isoformat()
+    skip_idempotency = os.environ.get("DIGEST_FORCE") == "1"
+    if not skip_idempotency and SENT_MARKER.exists():
+        last_sent = SENT_MARKER.read_text().strip()
+        if last_sent == today:
+            print(f"Email already sent today ({today}). Skipping. (set DIGEST_FORCE=1 to override)")
+            return 0
+
     state = load_state()
     history = load_history()
     basket_rows = deltas_for_basket(history, state)
@@ -304,6 +316,10 @@ def main() -> int:
         s.login(sender, pwd)
         s.sendmail(sender, [recipient], msg.as_string())
     print(f"Sent: {subject}")
+
+    # Update marker file so subsequent runs on the same date skip.
+    SENT_MARKER.parent.mkdir(parents=True, exist_ok=True)
+    SENT_MARKER.write_text(today)
     return 0
 
 
