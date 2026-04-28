@@ -242,14 +242,32 @@ def _normalise_ticker(scraped: str, name: str) -> str:
 
 
 def append_history(rows: list[dict], date: str | None = None) -> None:
+    """Upsert today's rows into hotlist_history.csv. If rows already exist
+    for `date`, they are replaced with the new scrape (idempotent re-runs)."""
     date = date or dt.date.today().isoformat()
     ex_t, ex_p = load_exclusions()
     HISTORY_PATH.parent.mkdir(parents=True, exist_ok=True)
-    write_header = not HISTORY_PATH.exists() or HISTORY_PATH.stat().st_size == 0
-    with HISTORY_PATH.open("a", newline="") as f:
+
+    header = ["date", "rank", "ticker", "name", "users", "is_excluded"]
+    existing: list[list[str]] = []
+    if HISTORY_PATH.exists() and HISTORY_PATH.stat().st_size > 0:
+        with HISTORY_PATH.open(newline="") as f:
+            r = csv.reader(f)
+            try:
+                first = next(r)
+                if first != header:
+                    existing.append(first)  # unexpected; preserve as a row
+            except StopIteration:
+                pass
+            for row in r:
+                if row and row[0] != date:
+                    existing.append(row)
+
+    with HISTORY_PATH.open("w", newline="") as f:
         w = csv.writer(f)
-        if write_header:
-            w.writerow(["date", "rank", "ticker", "name", "users", "is_excluded"])
+        w.writerow(header)
+        for row in existing:
+            w.writerow(row)
         for r in rows:
             excluded = is_excluded(r["ticker"], r["name"], ex_t, ex_p)
             w.writerow([date, r["rank"], r["ticker"], r["name"], r["users"], int(excluded)])
