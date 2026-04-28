@@ -236,9 +236,9 @@
     <ol>
       <li><strong>Universe.</strong> Top 10 most-owned single stocks on the T212 Hotlist (ETFs and trackers excluded).</li>
       <li><strong>Initial weight.</strong> Ownership-weighted at inception. <code>w = users<sub>i</sub> / Σ users</code>.</li>
-      <li><strong>Drift policy.</strong> Hold and let drift. No periodic rebalance. No upper cap.</li>
-      <li><strong>Trigger.</strong> A held stock outside the Top 10 for 5 consecutive scrapes triggers a sale.</li>
-      <li><strong>Action.</strong> Sell the exited stock, buy the highest-ranked confirmed entrant with the proceeds.</li>
+      <li><strong>Drift policy.</strong> Hold and let drift between rotation events. No periodic rebalance.</li>
+      <li><strong>Trigger.</strong> A held stock outside the Top 10 for 5 consecutive scrapes.</li>
+      <li><strong>Action.</strong> Full rebalance of the basket to the current ownership weights using that day's user counts. Old name out, new name in, all weights reset.</li>
     </ol>
   </div>
 
@@ -271,8 +271,8 @@
         <td class="num">{{ '{:,}'.format(r.users) }}</td>
         <td class="num">#{{ r.rank }}</td>
         <td class="num">
-          <span class="weight-bar" style="width: {{ (r.weight or 0) * 200 }}px"></span>
-          {{ '{:.2%}'.format(r.weight or 0) }}
+          <span class="weight-bar" style="width: {{ (r.weight_pct or 0) * 2 }}px"></span>
+          {{ r.weight_pct or 0 }}%
         </td>
         <td class="num {{ delta_class(r.delta_1d_pct) }}">{{ pct_or_dash(r.delta_1d_pct) }}</td>
         <td class="num {{ delta_class(r.delta_7d_pct) }}">{{ pct_or_dash(r.delta_7d_pct) }}</td>

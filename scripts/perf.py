@@ -113,9 +113,9 @@ def simulate(state: dict) -> pd.DataFrame:
     fx = prices[USD_FX_TICKER]
     prices_gbp = to_gbp(prices.drop(columns=[USD_FX_TICKER], errors="ignore"), fx)
 
-    # Initial position = ownership weights at inception
-    weights_init = {b["ticker"]: float(b.get("weight_at_entry", 1.0 / len(basket))) for b in basket}
-    # Normalise (in case of float drift)
+    # Initial position = ownership weights at inception (rounded int % stored)
+    weights_init = {b["ticker"]: float(b.get("weight_pct", 100 / len(basket))) / 100 for b in basket}
+    # Normalise (defensive)
     s = sum(weights_init.values())
     if s > 0:
         weights_init = {k: v / s for k, v in weights_init.items()}
@@ -132,35 +132,62 @@ def simulate(state: dict) -> pd.DataFrame:
             continue
         shares[t] = (NOTIONAL_GBP * w) / float(p0[col])
 
-    # Replay rotations chronologically
+    # Replay rebalance/rotation events chronologically. Each rotate+rebalance
+    # event in the trade log is a FULL rebalance to the new basket weights
+    # captured in trade_log.note (or, more reliably, looked up from history).
     trade_events = []
     if TRADE_LOG.exists():
         with TRADE_LOG.open() as f:
             r = csv.DictReader(f)
             for row in r:
-                if row.get("event") == "rotate" and row.get("date"):
+                if row.get("event", "").startswith("rotate") and row.get("date"):
                     trade_events.append({
                         "date": pd.to_datetime(row["date"]).date(),
-                        "sold": row["sold_ticker"],
-                        "bought": row["bought_ticker"],
+                        "note": row.get("note", ""),
                     })
+
+    def _new_weights_at(date_obj):
+        """Compute fresh ownership weights for the date's top-10 singles."""
+        day = history[history["date"] == date_obj]
+        if day.empty:
+            return None
+        from compute import _top10_singles, round_to_int_pct  # noqa
+        top = _top10_singles(day)
+        total = int(top["users"].sum())
+        if total <= 0:
+            return None
+        raw = [int(u) / total for u in top["users"]]
+        pct_int = round_to_int_pct(raw)
+        return {row["ticker"]: pct_int[i] / 100 for i, (_, row) in enumerate(top.iterrows())}
 
     # Build daily timeline in GBP
     out_rows = []
     bench_inception_price = None
+    history_for_lookup = pd.read_csv(STATE_PATH.parent / "hotlist_history.csv") if (STATE_PATH.parent / "hotlist_history.csv").exists() else pd.DataFrame()
+    if not history_for_lookup.empty:
+        history_for_lookup["date"] = pd.to_datetime(history_for_lookup["date"]).dt.date
+    history = history_for_lookup
     for ts, row in prices_gbp.iterrows():
         d = ts.date()
         if d < inception_d:
             continue
-        # Apply any rotation events on or before this date that haven't been applied.
+        # Apply rebalance events on/before this date.
         while trade_events and trade_events[0]["date"] <= d:
             ev = trade_events.pop(0)
-            sold_t, bought_t = ev["sold"], ev["bought"]
-            sold_col = _yf(sold_t)
-            bought_col = _yf(bought_t)
-            if sold_col in row.index and bought_col in row.index and not pd.isna(row[sold_col]) and not pd.isna(row[bought_col]):
-                proceeds = shares.pop(sold_t, 0.0) * float(row[sold_col])
-                shares[bought_t] = proceeds / float(row[bought_col]) if row[bought_col] > 0 else 0.0
+            new_w = _new_weights_at(ev["date"])
+            if new_w is None:
+                continue
+            # Mark current portfolio to today's prices, then redistribute.
+            portfolio_value = 0.0
+            for t, sh in shares.items():
+                col = _yf(t)
+                if col in row.index and not pd.isna(row[col]):
+                    portfolio_value += sh * float(row[col])
+            shares = {}
+            for t, w in new_w.items():
+                col = _yf(t)
+                if col in row.index and not pd.isna(row[col]) and row[col] > 0:
+                    shares[t] = (portfolio_value * w) / float(row[col])
 
         port_value = 0.0
         for t, sh in shares.items():

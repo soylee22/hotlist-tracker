@@ -4,18 +4,19 @@
 - Identifies the current "Top 10 single stocks".
 - Maintains hysteresis (5 consecutive days outside top 10 -> exit).
 - Detects rotation events (a confirmed exit + a confirmed new entrant).
-- Recomputes ownership weights on rotation events ONLY.
+- On rotation events: FULL rebalance of the basket to current ownership weights.
 - Writes data/portfolio_state.json with current basket + watch list.
+- Weights stored as integer percentages (no spurious decimals).
 
-Rule (v1.0):
+Rule (v1.1):
     - Universe: top 10 most-owned single stocks (excluding ETFs).
-    - Initial weights: ownership-weight at inception.
-    - Drift policy: hold and drift. No periodic rebalance. No upper cap.
+    - Initial weights: ownership-weight at inception, rounded to int %.
+    - Drift policy: hold and drift between rotations.
     - Trigger: held stock outside Top 10 single-stocks for 5 consecutive
       daily scrapes.
-    - Action: sell exited stock, buy proceeds-equivalent of the highest
-      ranked Top-10 single stock not currently held that has been in the
-      Top 10 for at least 5 consecutive scrapes (the candidate queue).
+    - Action on trigger: full rebalance of all 10 positions to today's
+      ownership weights (sell exited stock; reallocate the entire basket
+      to fresh ownership weights using today's user counts).
 """
 from __future__ import annotations
 
@@ -85,24 +86,45 @@ def _ticker_outside_top10(day_df: pd.DataFrame, ticker: str) -> bool:
     return not _ticker_in_top10(day_df, ticker)
 
 
+def round_to_int_pct(raw_weights: list[float]) -> list[int]:
+    """Round each weight (0..1) to integer % using the largest-remainder
+    method. Guarantees the result sums to exactly 100."""
+    if not raw_weights:
+        return []
+    pct = [w * 100 for w in raw_weights]
+    floored = [int(x) for x in pct]
+    remainder = 100 - sum(floored)
+    fracs = sorted(
+        enumerate(pct), key=lambda kv: kv[1] - int(kv[1]), reverse=True
+    )
+    for idx, _ in fracs[:max(0, remainder)]:
+        floored[idx] += 1
+    return floored
+
+
+def _basket_from_top10(top: pd.DataFrame, as_of_date: str) -> list[dict]:
+    total = int(top["users"].sum())
+    raw = [int(u) / total for u in top["users"]]
+    pct = round_to_int_pct(raw)
+    out = []
+    for (_, r), w in zip(top.iterrows(), pct):
+        out.append({
+            "ticker": r["ticker"],
+            "name": r["name"],
+            "rank_at_entry": int(r["filtered_rank"]),
+            "users_at_entry": int(r["users"]),
+            "weight_pct": int(w),
+            "entry_date": str(as_of_date),
+        })
+    return out
+
+
 def initial_basket(history: pd.DataFrame, inception_date) -> list[dict]:
     """Set initial basket = ownership-weighted top 10 singles on inception."""
     day = history[history["date"] == inception_date]
     if day.empty:
         return []
-    top = _top10_singles(day)
-    total = int(top["users"].sum())
-    return [
-        {
-            "ticker": r["ticker"],
-            "name": r["name"],
-            "rank_at_entry": int(r["filtered_rank"]),
-            "users_at_entry": int(r["users"]),
-            "weight_at_entry": round(float(r["users"]) / total, 6),
-            "entry_date": str(inception_date),
-        }
-        for _, r in top.iterrows()
-    ]
+    return _basket_from_top10(_top10_singles(day), str(inception_date))
 
 
 def compute_state(history: pd.DataFrame, state: dict) -> dict:
@@ -154,47 +176,28 @@ def compute_state(history: pd.DataFrame, state: dict) -> dict:
 
     # Process rotations one per day to keep churn bounded.
     if confirmed_exits and confirmed_entrants:
-        # Match the most-overdue exit to the highest-ranked confirmed entrant.
         exit_t = max(confirmed_exits, key=lambda x: exit_watch[x])
-        # Highest filtered_rank = lowest number = most-owned among entrants.
         ent_t = sorted(
             confirmed_entrants,
             key=lambda x: int(today_top.loc[today_top["ticker"] == x, "filtered_rank"].iloc[0]),
         )[0]
 
-        # Look up exited stock's last known users count for the trade log.
         last_seen_for_exit = history[history["ticker"] == exit_t].sort_values("date").tail(1)
         sold_users = int(last_seen_for_exit["users"].iloc[0]) if not last_seen_for_exit.empty else 0
         bought_users = int(today_top.loc[today_top["ticker"] == ent_t, "users"].iloc[0])
 
-        # Update basket: remove exit, add entrant. Entrant's weight = exit's last weight.
-        new_basket = []
-        exit_weight = 0.0
-        for b in state["basket"]:
-            if b["ticker"] == exit_t:
-                exit_weight = float(b.get("weight_at_entry", 0.1))
-                continue
-            new_basket.append(b)
-        ent_name = str(today_top.loc[today_top["ticker"] == ent_t, "name"].iloc[0])
-        new_basket.append({
-            "ticker": ent_t,
-            "name": ent_name,
-            "rank_at_entry": int(today_top.loc[today_top["ticker"] == ent_t, "filtered_rank"].iloc[0]),
-            "users_at_entry": bought_users,
-            "weight_at_entry": exit_weight,
-            "entry_date": str(today),
-        })
+        # FULL REBALANCE: reset the entire basket to today's ownership weights.
+        new_basket = _basket_from_top10(today_top, str(today))
         state["basket"] = new_basket
 
-        # Append to trade log.
+        # Trade log: headline is the rotation; note captures the full new weights.
+        weights_summary = ", ".join(f"{b['ticker']}:{b['weight_pct']}" for b in new_basket)
         with TRADES.open("a", newline="") as f:
             w = csv.writer(f)
             w.writerow([
-                today, "rotate", exit_t, sold_users, ent_t, bought_users,
-                f"5d hysteresis confirmed; entrant filtered_rank "
-                f"{int(today_top.loc[today_top['ticker'] == ent_t, 'filtered_rank'].iloc[0])}",
+                today, "rotate+rebalance", exit_t, sold_users, ent_t, bought_users,
+                f"Full rebalance to current ownership weights. New: {weights_summary}",
             ])
-        # Reset exit_watch for the swapped-out ticker.
         state["exit_watch"].pop(exit_t, None)
 
     return state
@@ -235,7 +238,7 @@ def deltas_for_basket(history: pd.DataFrame, state: dict) -> list[dict]:
             "name": b["name"],
             "users": latest,
             "rank": latest_rank,
-            "weight": b.get("weight_at_entry"),
+            "weight_pct": int(b.get("weight_pct", 0)),
             "delta_1d_pct": pct(latest, d1),
             "delta_7d_pct": pct(latest, d7),
             "delta_30d_pct": pct(latest, d30),

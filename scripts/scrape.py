@@ -59,9 +59,25 @@ def scrape_top(n: int = 30) -> list[dict]:
         page.goto(HOTLIST_URL, wait_until="domcontentloaded", timeout=60_000)
         # Wait for the leaderboard list to render. The page is a SPA.
         page.wait_for_load_state("networkidle", timeout=60_000)
-        # The leaderboard rows render with names, user counts, and tickers.
-        # We grab them by structured DOM extraction.
         page.wait_for_timeout(2500)
+
+        # T212 virtualises the leaderboard. Scroll the inner scroll area
+        # to render lower-ranked rows. Try several scroll strategies to
+        # accommodate different DOM structures.
+        try:
+            for y in (1000, 2500, 4000, 6000, 8000):
+                page.evaluate(f"() => window.scrollTo(0, {y})")
+                page.wait_for_timeout(350)
+            # Try scrolling any internal scrollable container too.
+            page.evaluate(
+                "() => { document.querySelectorAll('*').forEach(el => {"
+                " if (el.scrollHeight > el.clientHeight + 50) el.scrollTop = el.scrollHeight; }); }"
+            )
+            page.wait_for_timeout(800)
+            page.evaluate("() => window.scrollTo(0, 0)")
+            page.wait_for_timeout(500)
+        except Exception:
+            pass
 
         # Strategy: walk up from each user-count text node to a row container,
         # and capture the row's structured textContent. Then parse with regex
@@ -80,22 +96,33 @@ def scrape_top(n: int = 30) -> list[dict]:
                 const users = parseInt(el.textContent.replace(/,/g, ''), 10);
                 if (!Number.isFinite(users) || users < 5000) continue;
 
-                // Walk up looking for a "row container" that holds a name.
+                // Walk up to find the smallest parent that contains BOTH
+                // the user-count text AND at least 3 chars of other content
+                // (i.e., a name or ticker).
+                const userTxt = el.textContent.trim();
                 let parent = el.parentElement;
                 let chosen = null;
-                for (let i = 0; i < 8 && parent; i++, parent = parent.parentElement) {
+                let chosenLen = Infinity;
+                for (let i = 0; i < 14 && parent; i++, parent = parent.parentElement) {
                   const txt = (parent.textContent || '').replace(/\\s+/g, ' ').trim();
-                  // A good row should be reasonably short (one row of text).
-                  if (txt.length > 0 && txt.length < 200 && txt.includes(el.textContent.trim())) {
+                  if (txt.length === 0) continue;
+                  if (!txt.includes(userTxt)) continue;
+                  // Must contain other content beyond just the user count.
+                  const stripped = txt.replace(userTxt, '').trim();
+                  if (stripped.length < 3) continue;
+                  // First match wins (smallest containing parent).
+                  if (txt.length < chosenLen && txt.length <= 200) {
                     chosen = txt;
-                  } else if (chosen) {
-                    break;  // we walked past the row
+                    chosenLen = txt.length;
+                    if (chosenLen < 60) break;  // good enough, single row
                   }
+                  if (txt.length > 200) break;  // walked into multi-row
                 }
                 if (!chosen) continue;
-                if (seen.has(chosen)) continue;
-                seen.add(chosen);
-                rows.push({ raw: chosen, users });
+                // Dedup keyed on user count alone (one row per unique count).
+                if (seen.has(users)) continue;
+                seen.add(users);
+                rows.push({ raw: chosen, users, len: chosenLen });
               }
               return rows;
             }
