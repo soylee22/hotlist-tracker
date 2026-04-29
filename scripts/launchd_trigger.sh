@@ -16,13 +16,17 @@ stamp() { date -u +%Y-%m-%dT%H:%M:%SZ; }
 
 echo "$(stamp) trigger: invoked by launchd" >> "$LOG"
 
-# Idempotency: skip if a run for today's UTC date already exists.
-TODAY=$(date -u +%Y-%m-%d)
+# Idempotency: skip if any run was created in the last 18 hours. This
+# is window-based not date-based so the 07:35 morning backup correctly
+# skips when the 22:05 evening primary fired ~9.5h earlier (different
+# UTC date but same logical "today's run"). Window only re-opens if
+# the evening primary genuinely missed (Mac off, network down).
+CUTOFF=$(date -u -v-18H +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -d '18 hours ago' +%Y-%m-%dT%H:%M:%SZ)
 existing=$("$GH" api "/repos/$REPO/actions/workflows/$WORKFLOW/runs?per_page=10" \
-  --jq ".workflow_runs[] | select(.created_at | startswith(\"$TODAY\")) | .id" 2>>"$LOG" | head -1)
+  --jq ".workflow_runs[] | select(.created_at > \"$CUTOFF\") | \"\(.id) \(.created_at)\"" 2>>"$LOG" | head -1)
 
 if [ -n "$existing" ]; then
-  echo "$(stamp) trigger: run $existing already exists for $TODAY, skipping dispatch" >> "$LOG"
+  echo "$(stamp) trigger: recent run exists ($existing) within 18h window, skipping dispatch" >> "$LOG"
   exit 0
 fi
 
