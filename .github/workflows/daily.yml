@@ -1,13 +1,18 @@
 name: Hotlist daily
 
 on:
+  # Primary trigger is a local LaunchAgent on Lee's Mac firing
+  # `gh workflow run daily.yml` at 22:05 BST (07:35 backup next morning).
+  # See ~/Library/LaunchAgents/com.leeslater.hotlist-daily.plist and
+  # scripts/launchd_trigger.sh. GitHub's schedule: cron is best-effort and
+  # has missed runs entirely (e.g. 28 Apr 2026 #5 fired 59 min late and
+  # raced a manual dispatch). One off-the-hour cron remains as a fallback
+  # in case the Mac is offline for an extended period — :23 dodges
+  # top-of-hour scheduler contention. The trigger script and the
+  # email_digest idempotency guard ensure no duplicate emails or commits
+  # if both the LaunchAgent and the schedule cron fire on the same day.
   schedule:
-    # GitHub Actions scheduled crons are best-effort and frequently delayed
-    # 30+ minutes during peak load. Three trigger times for redundancy;
-    # concurrency control + email idempotency prevent duplicate work.
-    - cron: "0 21 * * *"   # 21:00 UTC primary (after US close)
-    - cron: "30 21 * * *"  # 21:30 UTC backup 1
-    - cron: "0 22 * * *"   # 22:00 UTC backup 2
+    - cron: "23 22 * * *"  # 22:23 UTC fallback only — primary is local LaunchAgent
   workflow_dispatch: {}
 
 permissions:
