@@ -135,6 +135,14 @@
     margin-right: 8px;
   }
 
+  /* Granular delta cells */
+  .delta-h { font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; }
+  .delta-cell { padding-top: 6px; padding-bottom: 6px; line-height: 1.15; }
+  .delta-cell .delta-pct  { font-weight: 600; font-size: 13px; }
+  .delta-cell .delta-users { font-size: 10px; color: var(--ink-mute); font-weight: 400; margin-top: 1px; }
+  .delta-cell.delta-pos .delta-users { color: rgba(47, 92, 57, 0.8); }
+  .delta-cell.delta-neg .delta-users { color: rgba(183, 55, 46, 0.8); }
+
   /* Watchlist */
   .watchlist tr td:first-child { width: 8%; }
 
@@ -288,11 +296,9 @@
         <th class="num">Users</th>
         <th class="num">Rank</th>
         <th class="num">Weight</th>
-        {% if show_1d %}<th class="num">1d</th>{% endif %}
-        {% if show_7d %}<th class="num">7d</th>{% endif %}
-        {% if show_30d %}<th class="num">30d</th>{% endif %}
-        {% if show_ytd %}<th class="num">YTD</th>{% endif %}
-        {% if show_inc %}<th class="num">Since inception</th>{% endif %}
+        {% for k in delta_window_keys %}
+        {% if show_windows[k] %}<th class="num delta-h">{{ {'ytd':'YTD','inception':'Since inc.'}.get(k, k) }}</th>{% endif %}
+        {% endfor %}
       </tr>
     </thead>
     <tbody>
@@ -315,11 +321,17 @@
           <span class="weight-bar" style="width: {{ (r.weight_pct or 0) * 2 }}px"></span>
           {{ r.weight_pct or 0 }}%
         </td>
-        {% if show_1d %}<td class="num {{ delta_class(r.delta_1d_pct) }}">{{ pct_or_dash(r.delta_1d_pct) }}</td>{% endif %}
-        {% if show_7d %}<td class="num {{ delta_class(r.delta_7d_pct) }}">{{ pct_or_dash(r.delta_7d_pct) }}</td>{% endif %}
-        {% if show_30d %}<td class="num {{ delta_class(r.delta_30d_pct) }}">{{ pct_or_dash(r.delta_30d_pct) }}</td>{% endif %}
-        {% if show_ytd %}<td class="num {{ delta_class(r.delta_ytd_pct) }}">{{ pct_or_dash(r.delta_ytd_pct) }}</td>{% endif %}
-        {% if show_inc %}<td class="num {{ delta_class(r.delta_inception_pct) }}">{{ pct_or_dash(r.delta_inception_pct) }}</td>{% endif %}
+        {% for k in delta_window_keys %}
+        {% if show_windows[k] %}
+          {% set d = (r.deltas or {}).get(k) or {} %}
+          <td class="num delta-cell {{ delta_class(d.pct) }}">
+            <div class="delta-pct">{{ pct_or_dash(d.pct) }}</div>
+            {% if d.users is not none %}
+            <div class="delta-users">({{ '+' if d.users > 0 else '' }}{{ '{:,}'.format(d.users) }})</div>
+            {% endif %}
+          </td>
+        {% endif %}
+        {% endfor %}
       </tr>
     {% endfor %}
     </tbody>

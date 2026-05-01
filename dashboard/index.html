@@ -135,6 +135,14 @@
     margin-right: 8px;
   }
 
+  /* Granular delta cells */
+  .delta-h { font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; }
+  .delta-cell { padding-top: 6px; padding-bottom: 6px; line-height: 1.15; }
+  .delta-cell .delta-pct  { font-weight: 600; font-size: 13px; }
+  .delta-cell .delta-users { font-size: 10px; color: var(--ink-mute); font-weight: 400; margin-top: 1px; }
+  .delta-cell.delta-pos .delta-users { color: rgba(47, 92, 57, 0.8); }
+  .delta-cell.delta-neg .delta-users { color: rgba(183, 55, 46, 0.8); }
+
   /* Watchlist */
   .watchlist tr td:first-child { width: 8%; }
 
@@ -281,11 +289,29 @@
         <th class="num">Users</th>
         <th class="num">Rank</th>
         <th class="num">Weight</th>
-        <th class="num">1d</th>
+        
+        <th class="num delta-h">1d</th>
+        
+        <th class="num delta-h">2d</th>
+        
+        <th class="num delta-h">3d</th>
         
         
         
-        <th class="num">Since inception</th>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <th class="num delta-h">Since inc.</th>
+        
       </tr>
     </thead>
     <tbody>
@@ -308,11 +334,61 @@
           <span class="weight-bar" style="width: 32px"></span>
           16%
         </td>
-        <td class="num delta-pos">+0.0%</td>
+        
+        
+          
+          <td class="num delta-cell delta-pos">
+            <div class="delta-pct">+0.0%</div>
+            
+            <div class="delta-users">(+261)</div>
+            
+          </td>
         
         
         
-        <td class="num delta-pos">+0.7%</td>
+          
+          <td class="num delta-cell delta-pos">
+            <div class="delta-pct">+0.5%</div>
+            
+            <div class="delta-users">(+3,977)</div>
+            
+          </td>
+        
+        
+        
+          
+          <td class="num delta-cell delta-pos">
+            <div class="delta-pct">+0.7%</div>
+            
+            <div class="delta-users">(+5,602)</div>
+            
+          </td>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+          
+          <td class="num delta-cell delta-pos">
+            <div class="delta-pct">+0.7%</div>
+            
+            <div class="delta-users">(+5,602)</div>
+            
+          </td>
+        
+        
       </tr>
     
       <tr>
@@ -333,11 +409,61 @@
           <span class="weight-bar" style="width: 28px"></span>
           14%
         </td>
-        <td class="num delta-pos">+0.0%</td>
+        
+        
+          
+          <td class="num delta-cell delta-pos">
+            <div class="delta-pct">+0.0%</div>
+            
+            <div class="delta-users">(+99)</div>
+            
+          </td>
         
         
         
-        <td class="num delta-pos">+0.6%</td>
+          
+          <td class="num delta-cell delta-pos">
+            <div class="delta-pct">+0.4%</div>
+            
+            <div class="delta-users">(+2,868)</div>
+            
+          </td>
+        
+        
+        
+          
+          <td class="num delta-cell delta-pos">
+            <div class="delta-pct">+0.6%</div>
+            
+            <div class="delta-users">(+4,161)</div>
+            
+          </td>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+          
+          <td class="num delta-cell delta-pos">
+            <div class="delta-pct">+0.6%</div>
+            
+            <div class="delta-users">(+4,161)</div>
+            
+          </td>
+        
+        
       </tr>
     
       <tr>
@@ -358,11 +484,61 @@
           <span class="weight-bar" style="width: 26px"></span>
           13%
         </td>
-        <td class="num delta-zero">0.0%</td>
+        
+        
+          
+          <td class="num delta-cell delta-zero">
+            <div class="delta-pct">0.0%</div>
+            
+            <div class="delta-users">(+11)</div>
+            
+          </td>
         
         
         
-        <td class="num delta-pos">+0.3%</td>
+          
+          <td class="num delta-cell delta-pos">
+            <div class="delta-pct">+0.2%</div>
+            
+            <div class="delta-users">(+1,109)</div>
+            
+          </td>
+        
+        
+        
+          
+          <td class="num delta-cell delta-pos">
+            <div class="delta-pct">+0.3%</div>
+            
+            <div class="delta-users">(+1,813)</div>
+            
+          </td>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+          
+          <td class="num delta-cell delta-pos">
+            <div class="delta-pct">+0.3%</div>
+            
+            <div class="delta-users">(+1,813)</div>
+            
+          </td>
+        
+        
       </tr>
     
       <tr>
@@ -383,11 +559,61 @@
           <span class="weight-bar" style="width: 22px"></span>
           11%
         </td>
-        <td class="num delta-neg">-0.0%</td>
+        
+        
+          
+          <td class="num delta-cell delta-neg">
+            <div class="delta-pct">-0.0%</div>
+            
+            <div class="delta-users">(-39)</div>
+            
+          </td>
         
         
         
-        <td class="num delta-pos">+0.3%</td>
+          
+          <td class="num delta-cell delta-pos">
+            <div class="delta-pct">+0.2%</div>
+            
+            <div class="delta-users">(+1,160)</div>
+            
+          </td>
+        
+        
+        
+          
+          <td class="num delta-cell delta-pos">
+            <div class="delta-pct">+0.3%</div>
+            
+            <div class="delta-users">(+1,812)</div>
+            
+          </td>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+          
+          <td class="num delta-cell delta-pos">
+            <div class="delta-pct">+0.3%</div>
+            
+            <div class="delta-users">(+1,812)</div>
+            
+          </td>
+        
+        
       </tr>
     
       <tr>
@@ -408,11 +634,61 @@
           <span class="weight-bar" style="width: 20px"></span>
           10%
         </td>
-        <td class="num delta-zero">-0.0%</td>
+        
+        
+          
+          <td class="num delta-cell delta-zero">
+            <div class="delta-pct">-0.0%</div>
+            
+            <div class="delta-users">(-19)</div>
+            
+          </td>
         
         
         
-        <td class="num delta-pos">+0.0%</td>
+          
+          <td class="num delta-cell delta-neg">
+            <div class="delta-pct">-0.0%</div>
+            
+            <div class="delta-users">(-150)</div>
+            
+          </td>
+        
+        
+        
+          
+          <td class="num delta-cell delta-pos">
+            <div class="delta-pct">+0.0%</div>
+            
+            <div class="delta-users">(+123)</div>
+            
+          </td>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+          
+          <td class="num delta-cell delta-pos">
+            <div class="delta-pct">+0.0%</div>
+            
+            <div class="delta-users">(+123)</div>
+            
+          </td>
+        
+        
       </tr>
     
       <tr>
@@ -433,11 +709,61 @@
           <span class="weight-bar" style="width: 18px"></span>
           9%
         </td>
-        <td class="num delta-pos">+0.0%</td>
+        
+        
+          
+          <td class="num delta-cell delta-pos">
+            <div class="delta-pct">+0.0%</div>
+            
+            <div class="delta-users">(+142)</div>
+            
+          </td>
         
         
         
-        <td class="num delta-pos">+1.6%</td>
+          
+          <td class="num delta-cell delta-pos">
+            <div class="delta-pct">+1.1%</div>
+            
+            <div class="delta-users">(+4,886)</div>
+            
+          </td>
+        
+        
+        
+          
+          <td class="num delta-cell delta-pos">
+            <div class="delta-pct">+1.6%</div>
+            
+            <div class="delta-users">(+6,677)</div>
+            
+          </td>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+          
+          <td class="num delta-cell delta-pos">
+            <div class="delta-pct">+1.6%</div>
+            
+            <div class="delta-users">(+6,677)</div>
+            
+          </td>
+        
+        
       </tr>
     
       <tr>
@@ -458,11 +784,61 @@
           <span class="weight-bar" style="width: 18px"></span>
           9%
         </td>
-        <td class="num delta-zero">0.0%</td>
+        
+        
+          
+          <td class="num delta-cell delta-zero">
+            <div class="delta-pct">0.0%</div>
+            
+            <div class="delta-users">(+10)</div>
+            
+          </td>
         
         
         
-        <td class="num delta-pos">+0.4%</td>
+          
+          <td class="num delta-cell delta-pos">
+            <div class="delta-pct">+0.2%</div>
+            
+            <div class="delta-users">(+668)</div>
+            
+          </td>
+        
+        
+        
+          
+          <td class="num delta-cell delta-pos">
+            <div class="delta-pct">+0.4%</div>
+            
+            <div class="delta-users">(+1,619)</div>
+            
+          </td>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+          
+          <td class="num delta-cell delta-pos">
+            <div class="delta-pct">+0.4%</div>
+            
+            <div class="delta-users">(+1,619)</div>
+            
+          </td>
+        
+        
       </tr>
     
       <tr>
@@ -483,11 +859,61 @@
           <span class="weight-bar" style="width: 12px"></span>
           6%
         </td>
-        <td class="num delta-pos">+0.1%</td>
+        
+        
+          
+          <td class="num delta-cell delta-pos">
+            <div class="delta-pct">+0.1%</div>
+            
+            <div class="delta-users">(+233)</div>
+            
+          </td>
         
         
         
-        <td class="num delta-pos">+0.3%</td>
+          
+          <td class="num delta-cell delta-pos">
+            <div class="delta-pct">+0.1%</div>
+            
+            <div class="delta-users">(+401)</div>
+            
+          </td>
+        
+        
+        
+          
+          <td class="num delta-cell delta-pos">
+            <div class="delta-pct">+0.3%</div>
+            
+            <div class="delta-users">(+1,011)</div>
+            
+          </td>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+          
+          <td class="num delta-cell delta-pos">
+            <div class="delta-pct">+0.3%</div>
+            
+            <div class="delta-users">(+1,011)</div>
+            
+          </td>
+        
+        
       </tr>
     
       <tr>
@@ -508,11 +934,61 @@
           <span class="weight-bar" style="width: 12px"></span>
           6%
         </td>
-        <td class="num delta-zero">0.0%</td>
+        
+        
+          
+          <td class="num delta-cell delta-zero">
+            <div class="delta-pct">0.0%</div>
+            
+            <div class="delta-users">(0)</div>
+            
+          </td>
         
         
         
-        <td class="num delta-pos">+0.2%</td>
+          
+          <td class="num delta-cell delta-pos">
+            <div class="delta-pct">+0.1%</div>
+            
+            <div class="delta-users">(+336)</div>
+            
+          </td>
+        
+        
+        
+          
+          <td class="num delta-cell delta-pos">
+            <div class="delta-pct">+0.2%</div>
+            
+            <div class="delta-users">(+699)</div>
+            
+          </td>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+          
+          <td class="num delta-cell delta-pos">
+            <div class="delta-pct">+0.2%</div>
+            
+            <div class="delta-users">(+699)</div>
+            
+          </td>
+        
+        
       </tr>
     
       <tr>
@@ -533,11 +1009,61 @@
           <span class="weight-bar" style="width: 12px"></span>
           6%
         </td>
-        <td class="num delta-zero">0.0%</td>
+        
+        
+          
+          <td class="num delta-cell delta-zero">
+            <div class="delta-pct">0.0%</div>
+            
+            <div class="delta-users">(+12)</div>
+            
+          </td>
         
         
         
-        <td class="num delta-pos">+0.2%</td>
+          
+          <td class="num delta-cell delta-pos">
+            <div class="delta-pct">+0.1%</div>
+            
+            <div class="delta-users">(+294)</div>
+            
+          </td>
+        
+        
+        
+          
+          <td class="num delta-cell delta-pos">
+            <div class="delta-pct">+0.2%</div>
+            
+            <div class="delta-users">(+660)</div>
+            
+          </td>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+          
+          <td class="num delta-cell delta-pos">
+            <div class="delta-pct">+0.2%</div>
+            
+            <div class="delta-users">(+660)</div>
+            
+          </td>
+        
+        
       </tr>
     
     </tbody>

@@ -158,12 +158,19 @@ def main() -> int:
     else:
         days_tracked = 0
 
-    # Determine which delta columns have any signal (suppress all-empty ones)
-    show_1d  = any(r.get("delta_1d_pct")  is not None for r in basket_rows)
+    # Determine which delta columns have any signal across the basket;
+    # template suppresses any column where every cell is empty.
+    delta_window_keys = ["1d","2d","3d","4d","5d","10d","15d","20d","30d","ytd","inception"]
+    show_windows = {
+        k: any((r.get("deltas") or {}).get(k, {}).get("pct") is not None for r in basket_rows)
+        for k in delta_window_keys
+    }
+    # Back-compat flags for any older sections still referencing them
+    show_1d  = show_windows["1d"]
     show_7d  = any(r.get("delta_7d_pct")  is not None for r in basket_rows)
-    show_30d = any(r.get("delta_30d_pct") is not None for r in basket_rows)
-    show_ytd = any(r.get("delta_ytd_pct") is not None for r in basket_rows)
-    show_inc = any(r.get("delta_inception_pct") is not None for r in basket_rows)
+    show_30d = show_windows["30d"]
+    show_ytd = show_windows["ytd"]
+    show_inc = show_windows["inception"]
     is_day_one = history_days <= 1
 
     # Headline performance numbers (only meaningful with >=2 days of perf data)
@@ -219,6 +226,8 @@ def main() -> int:
         history_days=history_days,
         show_1d=show_1d, show_7d=show_7d, show_30d=show_30d,
         show_ytd=show_ytd, show_inc=show_inc,
+        show_windows=show_windows,
+        delta_window_keys=delta_window_keys,
         movers=movers,
         movers_window=movers_window,
     )

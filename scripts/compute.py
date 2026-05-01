@@ -236,9 +236,13 @@ def deltas_for_basket(history: pd.DataFrame, state: dict) -> list[dict]:
             row = sub[sub["date"] <= target_date]
             return int(row.iloc[-1]["users"]) if not row.empty else None
 
-        d1 = lookup(today - dt.timedelta(days=1))
-        d7 = lookup(today - dt.timedelta(days=7))
-        d30 = lookup(today - dt.timedelta(days=30))
+        # Granular daily windows + YTD + inception. Each window emits
+        # both an absolute user-count delta and a percentage so the
+        # dashboard can show "+0.30% (+1,054)" together.
+        windows = [
+            ("1d", 1), ("2d", 2), ("3d", 3), ("4d", 4), ("5d", 5),
+            ("10d", 10), ("15d", 15), ("20d", 20), ("30d", 30),
+        ]
         d_ytd = lookup(dt.date(today.year, 1, 1))
         d_inc = lookup(inception)
 
@@ -247,8 +251,18 @@ def deltas_for_basket(history: pd.DataFrame, state: dict) -> list[dict]:
                 return None
             return round((curr - base) / base * 100, 2)
 
-        # Absolute user-count delta vs yesterday
-        delta_1d_users = (latest - d1) if d1 is not None else None
+        def users_delta(curr, base):
+            return (curr - base) if base is not None else None
+
+        deltas: dict[str, dict] = {}
+        for label, days in windows:
+            base = lookup(today - dt.timedelta(days=days))
+            deltas[label] = {
+                "pct": pct(latest, base),
+                "users": users_delta(latest, base),
+            }
+        deltas["ytd"] = {"pct": pct(latest, d_ytd), "users": users_delta(latest, d_ytd)}
+        deltas["inception"] = {"pct": pct(latest, d_inc), "users": users_delta(latest, d_inc)}
 
         # Rank change vs yesterday (filtered single-stock universe).
         # Positive = moved UP (rank number decreased, e.g. #3 -> #2 = +1).
@@ -258,7 +272,7 @@ def deltas_for_basket(history: pd.DataFrame, state: dict) -> list[dict]:
         if rank_filt_today is not None and rank_filt_yesterday is not None:
             rank_change = rank_filt_yesterday - rank_filt_today
 
-        out.append({
+        row = {
             "ticker": t,
             "name": b["name"],
             "users": latest,
@@ -267,13 +281,17 @@ def deltas_for_basket(history: pd.DataFrame, state: dict) -> list[dict]:
             "rank_yesterday_filtered": rank_filt_yesterday,
             "rank_change": rank_change,
             "weight_pct": int(b.get("weight_pct", 0)),
-            "delta_1d_users": delta_1d_users,
-            "delta_1d_pct": pct(latest, d1),
-            "delta_7d_pct": pct(latest, d7),
-            "delta_30d_pct": pct(latest, d30),
-            "delta_ytd_pct": pct(latest, d_ytd),
-            "delta_inception_pct": pct(latest, d_inc),
-        })
+            "deltas": deltas,
+        }
+        # Backwards-compat flat keys still used by older render paths
+        # (email digest day-1 logic, legacy column-flag detection):
+        row["delta_1d_users"] = deltas["1d"]["users"]
+        row["delta_1d_pct"] = deltas["1d"]["pct"]
+        row["delta_7d_pct"] = pct(latest, lookup(today - dt.timedelta(days=7)))
+        row["delta_30d_pct"] = deltas["30d"]["pct"]
+        row["delta_ytd_pct"] = deltas["ytd"]["pct"]
+        row["delta_inception_pct"] = deltas["inception"]["pct"]
+        out.append(row)
     return out
 
 
