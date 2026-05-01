@@ -48,7 +48,7 @@ jobs:
           python -m playwright install --with-deps chromium
 
       - name: Scrape Hotlist
-        run: python scripts/scrape.py --top 30
+        run: python scripts/scrape.py --top 100
         env:
           PYTHONUNBUFFERED: "1"
 

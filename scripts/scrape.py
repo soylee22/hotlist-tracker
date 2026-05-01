@@ -1,6 +1,6 @@
 """Scrape Trading 212 Hotlist Leaderboard.
 
-Captures the top 30 instruments by user-ownership count, appends to
+Captures the top 100 instruments by user-ownership count, appends to
 data/hotlist_history.csv as one row per (date, rank, ticker).
 
 Usage:
@@ -38,7 +38,7 @@ def is_excluded(ticker: str, name: str, ex_tickers: set[str], ex_patterns: list[
     return any(p in name_l for p in ex_patterns)
 
 
-def scrape_top(n: int = 30) -> list[dict]:
+def scrape_top(n: int = 100) -> list[dict]:
     """Scrape the top-N rows of the Hotlist Leaderboard.
 
     Returns list of {rank, name, ticker, users}. Ticker may be empty for
@@ -109,23 +109,34 @@ def scrape_top(n: int = 30) -> list[dict]:
         for r in _extract_visible_rows():
             accumulated[r["users"]] = r
 
-        # Scroll incrementally and capture again at each position.
-        for y in range(400, 6000, 500):
+        # Scroll incrementally and capture again at each position. Range
+        # extended to cover top ~100 (each row ~80px so ~8000-9000px gets
+        # rank 100; 14000 is safety margin for long names wrapping).
+        for y in range(400, 14000, 400):
             page.evaluate(f"() => window.scrollTo(0, {y})")
-            page.wait_for_timeout(280)
+            page.wait_for_timeout(220)
             for r in _extract_visible_rows():
                 accumulated.setdefault(r["users"], r)
+            # Early stop if we already have plenty of rows AND the latest
+            # scroll position didn't reveal anything new for two iterations.
+            if len(accumulated) >= n + 20 and y > 8000:
+                break
 
-        # Also try internal scrollable containers (some SPAs use inner scrolls).
+        # Also try internal scrollable containers (some SPAs use inner
+        # scrolls). Step through several increments rather than one shot.
         try:
-            page.evaluate(
-                "() => { document.querySelectorAll('*').forEach(el => {"
-                " if (el.scrollHeight > el.clientHeight + 50)"
-                " el.scrollTop = el.scrollTop + 800; }); }"
-            )
-            page.wait_for_timeout(500)
-            for r in _extract_visible_rows():
-                accumulated.setdefault(r["users"], r)
+            for _ in range(20):
+                page.evaluate(
+                    "() => { document.querySelectorAll('*').forEach(el => {"
+                    " if (el.scrollHeight > el.clientHeight + 50)"
+                    " el.scrollTop = el.scrollTop + 600; }); }"
+                )
+                page.wait_for_timeout(250)
+                before = len(accumulated)
+                for r in _extract_visible_rows():
+                    accumulated.setdefault(r["users"], r)
+                if len(accumulated) == before and len(accumulated) >= n:
+                    break
         except Exception:
             pass
 
@@ -155,12 +166,18 @@ def _split_ticker_name(rest: str) -> tuple[str, str]:
     if not rest:
         return "", ""
 
-    # Strategy 0: doubled identical token (IBM|IBM, BP|BP)
+    # Strategy 0a: doubled identical token (IBM|IBM, BP|BP, GSK|GSK).
     n = len(rest)
     if n % 2 == 0 and n >= 4:
         half = n // 2
         if rest[:half] == rest[half:] and rest[:half].isupper():
             return rest[:half], rest[:half]
+
+    # Strategy 0b: LSE-style "TICKER + NAME" both all-uppercase, equal
+    # length, e.g. HSBA|HSBC (HSBA Holdings shown as HSBC name).
+    if n in (6, 8) and rest.isupper():
+        half = n // 2
+        return rest[:half], rest[half:]
 
     # Strategy 1: tricky known prefixes
     for px in TRICKY_PREFIXES:
@@ -320,7 +337,7 @@ def append_history(rows: list[dict], date: str | None = None) -> None:
 
 def main() -> int:
     p = argparse.ArgumentParser()
-    p.add_argument("--top", type=int, default=30)
+    p.add_argument("--top", type=int, default=100)
     p.add_argument("--date", type=str, default=None, help="Override date (YYYY-MM-DD)")
     p.add_argument("--dry-run", action="store_true", help="Print to stdout, do not append")
     args = p.parse_args()
