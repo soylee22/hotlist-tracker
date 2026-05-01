@@ -30,10 +30,11 @@ if [ -n "$existing" ]; then
   exit 0
 fi
 
-if "$GH" workflow run "$WORKFLOW" -R "$REPO" >>"$LOG" 2>&1; then
+"$GH" workflow run "$WORKFLOW" -R "$REPO" >>"$LOG" 2>&1
+rc=$?
+if [ "$rc" -eq 0 ]; then
   echo "$(stamp) trigger: dispatched ok" >> "$LOG"
   exit 0
-else
-  echo "$(stamp) trigger: dispatch FAILED (exit $?)" >> "$LOG"
-  exit 1
 fi
+echo "$(stamp) trigger: dispatch FAILED (gh exit $rc)" >> "$LOG"
+exit 1
