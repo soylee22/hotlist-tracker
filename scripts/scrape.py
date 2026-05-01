@@ -220,7 +220,12 @@ def _parse_raw_rows(raw_rows: list[dict], n: int) -> list[dict]:
         if not name:
             continue
         parsed.append({"page_rank": rank, "ticker": ticker, "name": name, "users": users})
-    # Deduplicate by ticker (keeping first occurrence, which is highest on the list).
+    # Normalise ticker FIRST (so e.g. "Vanguard FTSE All-World (Acc)"
+    # parsed straight as VWRP and a malformed parse of the same row both
+    # become VWRP), then dedup. Otherwise dedup misses post-normalisation
+    # collisions and we get the same canonical ticker twice in the CSV.
+    for r in parsed:
+        r["ticker"] = _normalise_ticker(r["ticker"], r["name"])
     seen_t: set[str] = set()
     dedup: list[dict] = []
     for r in parsed:
@@ -235,7 +240,7 @@ def _parse_raw_rows(raw_rows: list[dict], n: int) -> list[dict]:
     for i, r in enumerate(dedup[:n], start=1):
         out.append({
             "rank": i,
-            "ticker": _normalise_ticker(r["ticker"], r["name"]),
+            "ticker": r["ticker"],
             "name": r["name"],
             "users": r["users"],
         })

@@ -15,6 +15,7 @@ STATE_PATH = ROOT / "data" / "portfolio_state.json"
 HISTORY_PATH = ROOT / "data" / "hotlist_history.csv"
 TRADE_LOG = ROOT / "data" / "trade_log.csv"
 PERF_PATH = ROOT / "data" / "performance.csv"
+MOVERS_PATH = ROOT / "data" / "movers.json"
 DASHBOARD_DIR = ROOT / "dashboard"
 TEMPLATE = "template.html"
 OUTPUT = DASHBOARD_DIR / "index.html"
@@ -133,6 +134,22 @@ def main() -> int:
         except Exception:
             perf_df = pd.DataFrame()
 
+    movers = {}
+    movers_window = None
+    if MOVERS_PATH.exists():
+        try:
+            movers = json.loads(MOVERS_PATH.read_text())
+            available = movers.get("available_windows") or []
+            # Prefer 7d if available (more meaningful than 1d), else 30d, else 1d
+            for pref in ("7d", "30d", "1d"):
+                if pref in available:
+                    movers_window = movers["windows"][pref]
+                    movers_window["window_label"] = pref
+                    break
+        except Exception:
+            movers = {}
+            movers_window = None
+
     inception = state.get("inception_date")
     last_updated = state.get("last_updated") or "—"
     if inception:
@@ -202,6 +219,8 @@ def main() -> int:
         history_days=history_days,
         show_1d=show_1d, show_7d=show_7d, show_30d=show_30d,
         show_ytd=show_ytd, show_inc=show_inc,
+        movers=movers,
+        movers_window=movers_window,
     )
     OUTPUT.write_text(html)
     print(f"Wrote dashboard to {OUTPUT}")

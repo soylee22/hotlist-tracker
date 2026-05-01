@@ -59,6 +59,10 @@ jobs:
         run: python scripts/perf.py
         continue-on-error: true
 
+      - name: Compute top-100 movers
+        run: python scripts/movers.py
+        continue-on-error: true
+
       - name: Render dashboard
         run: python scripts/render.py
 

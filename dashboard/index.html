@@ -138,6 +138,25 @@
   /* Watchlist */
   .watchlist tr td:first-child { width: 8%; }
 
+  /* Movers grid */
+  .movers-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 24px 32px;
+    margin: 8px 0 24px;
+  }
+  .movers-col h3.movers-h {
+    font-family: 'Crimson Pro', Georgia, serif;
+    font-weight: 600; font-size: 16px; letter-spacing: 0.01em;
+    color: var(--ink); margin: 8px 0 8px; padding-bottom: 4px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .movers-table th, .movers-table td {
+    font-size: 13px; padding: 6px 8px;
+  }
+  .movers-table tr td:first-child { width: 56%; }
+  @media (max-width: 760px) {
+    .movers-grid { grid-template-columns: 1fr; }
+  }
+
   /* Trade log */
   .trade-log td:first-child {
     font-family: 'JetBrains Mono', monospace; font-size: 12px;
@@ -787,9 +806,283 @@
   </table>
   
 
-  <!-- ============== PERFORMANCE ============== -->
+  <!-- ============== TOP 100 MOVERS ============== -->
   <div class="section-marker">
     <span class="num">Section IV</span>
+    <span class="label">Movement</span>
+  </div>
+  <h2>Movement in the <em>top 100</em> <small style="font-weight:400;color:#76695E;">— 1d (2026-04-30 → 2026-05-01)</small></h2>
+
+  
+  <div class="movers-grid">
+    <div class="movers-col">
+      <h3 class="movers-h">Biggest user-count climbers</h3>
+      <table class="watchlist movers-table">
+        <thead>
+          <tr>
+            <th>Stock</th>
+            <th class="num">Δ users</th>
+            <th class="num">Δ %</th>
+            <th class="num">Rank</th>
+          </tr>
+        </thead>
+        <tbody>
+        
+          <tr>
+            <td><span class="ticker">VWRP</span> &nbsp; <span class="name">Vanguard FTSE All-World (Acc)</span></td>
+            <td class="num delta-pos">+1,054</td>
+            <td class="num delta-pos">+0.30%</td>
+            <td class="num">9 → 9</td>
+          </tr>
+        
+          <tr>
+            <td><span class="ticker">VUAG</span> &nbsp; <span class="name">Vanguard S&amp;P 500 (Acc)</span></td>
+            <td class="num delta-pos">+955</td>
+            <td class="num delta-pos">+0.10%</td>
+            <td class="num">3 → 3</td>
+          </tr>
+        
+          <tr>
+            <td><span class="ticker">SGLN</span> &nbsp; <span class="name">iShares Physical Gold</span></td>
+            <td class="num delta-pos">+454</td>
+            <td class="num delta-pos">+0.20%</td>
+            <td class="num">11 → 11</td>
+          </tr>
+        
+          <tr>
+            <td><span class="ticker">NVDA</span> &nbsp; <span class="name">Nvidia</span></td>
+            <td class="num delta-pos">+261</td>
+            <td class="num delta-pos">+0.00%</td>
+            <td class="num">1 → 1</td>
+          </tr>
+        
+          <tr>
+            <td><span class="ticker">RR.L</span> &nbsp; <span class="name">Rolls-Royce</span></td>
+            <td class="num delta-pos">+233</td>
+            <td class="num delta-pos">+0.10%</td>
+            <td class="num">12 → 12</td>
+          </tr>
+        
+          <tr>
+            <td><span class="ticker">BP.L</span> &nbsp; <span class="name">BP</span></td>
+            <td class="num delta-pos">+176</td>
+            <td class="num delta-pos">+0.10%</td>
+            <td class="num">25 → 25</td>
+          </tr>
+        
+          <tr>
+            <td><span class="ticker">META</span> &nbsp; <span class="name">Meta Platforms</span></td>
+            <td class="num delta-pos">+142</td>
+            <td class="num delta-pos">+0.00%</td>
+            <td class="num">7 → 7</td>
+          </tr>
+        
+          <tr>
+            <td><span class="ticker">VUSA</span> &nbsp; <span class="name">Vanguard S&amp;P 500 (Dist)</span></td>
+            <td class="num delta-pos">+113</td>
+            <td class="num delta-pos">+0.00%</td>
+            <td class="num">10 → 10</td>
+          </tr>
+        
+          <tr>
+            <td><span class="ticker">MSFT</span> &nbsp; <span class="name">Microsoft</span></td>
+            <td class="num delta-pos">+99</td>
+            <td class="num delta-pos">+0.00%</td>
+            <td class="num">2 → 2</td>
+          </tr>
+        
+          <tr>
+            <td><span class="ticker">IBM</span> &nbsp; <span class="name">IBM</span></td>
+            <td class="num delta-pos">+19</td>
+            <td class="num delta-pos">+0.00%</td>
+            <td class="num">15 → 15</td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+
+    <div class="movers-col">
+      <h3 class="movers-h">Biggest user-count fallers</h3>
+      <table class="watchlist movers-table">
+        <thead>
+          <tr>
+            <th>Stock</th>
+            <th class="num">Δ users</th>
+            <th class="num">Δ %</th>
+            <th class="num">Rank</th>
+          </tr>
+        </thead>
+        <tbody>
+        
+          <tr>
+            <td><span class="ticker">AMZN</span> &nbsp; <span class="name">Amazon</span></td>
+            <td class="num delta-neg">-39</td>
+            <td class="num delta-neg">-0.00%</td>
+            <td class="num">5 → 5</td>
+          </tr>
+        
+          <tr>
+            <td><span class="ticker">TSLA</span> &nbsp; <span class="name">Tesla</span></td>
+            <td class="num delta-neg">-19</td>
+            <td class="num delta-neg">-0.00%</td>
+            <td class="num">6 → 6</td>
+          </tr>
+        
+          <tr>
+            <td><span class="ticker">O</span> &nbsp; <span class="name">Realty Income</span></td>
+            <td class="num delta-neg">-18</td>
+            <td class="num delta-neg">-0.00%</td>
+            <td class="num">16 → 16</td>
+          </tr>
+        
+          <tr>
+            <td><span class="ticker">JPM</span> &nbsp; <span class="name">JPMorgan Chase &amp; Co</span></td>
+            <td class="num delta-neg">-12</td>
+            <td class="num delta-neg">-0.00%</td>
+            <td class="num">18 → 18</td>
+          </tr>
+        
+          <tr>
+            <td><span class="ticker">AVGO</span> &nbsp; <span class="name">Broadcom</span></td>
+            <td class="num delta-neg">-8</td>
+            <td class="num delta-neg">-0.00%</td>
+            <td class="num">24 → 24</td>
+          </tr>
+        
+          <tr>
+            <td><span class="ticker">CVX</span> &nbsp; <span class="name">Chevron</span></td>
+            <td class="num delta-neg">-7</td>
+            <td class="num delta-neg">-0.00%</td>
+            <td class="num">22 → 22</td>
+          </tr>
+        
+          <tr>
+            <td><span class="ticker">PEP</span> &nbsp; <span class="name">PepsiCo</span></td>
+            <td class="num delta-neg">-7</td>
+            <td class="num delta-neg">-0.00%</td>
+            <td class="num">23 → 23</td>
+          </tr>
+        
+          <tr>
+            <td><span class="ticker">AGNC</span> &nbsp; <span class="name">AGNC Investment</span></td>
+            <td class="num delta-neg">-4</td>
+            <td class="num delta-neg">-0.00%</td>
+            <td class="num">30 → 30</td>
+          </tr>
+        
+          <tr>
+            <td><span class="ticker">MAIN</span> &nbsp; <span class="name">Main Street Capital</span></td>
+            <td class="num delta-neg">-2</td>
+            <td class="num delta-neg">-0.00%</td>
+            <td class="num">29 → 29</td>
+          </tr>
+        
+          <tr>
+            <td><span class="ticker">JNJ</span> &nbsp; <span class="name">Johnson &amp; Johnson</span></td>
+            <td class="num delta-neg">-1</td>
+            <td class="num delta-neg">-0.00%</td>
+            <td class="num">17 → 17</td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+
+    <div class="movers-col">
+      <h3 class="movers-h">Biggest rank climbers</h3>
+      <table class="watchlist movers-table">
+        <thead>
+          <tr>
+            <th>Stock</th>
+            <th class="num">Rank</th>
+            <th class="num">Δ rank</th>
+            <th class="num">Users</th>
+          </tr>
+        </thead>
+        <tbody>
+        
+          <tr>
+            <td><span class="ticker">NVDA</span> &nbsp; <span class="name">Nvidia</span></td>
+            <td class="num">1 → 1</td>
+            <td class="num delta-pos">—</td>
+            <td class="num">781,514</td>
+          </tr>
+        
+          <tr>
+            <td><span class="ticker">MSFT</span> &nbsp; <span class="name">Microsoft</span></td>
+            <td class="num">2 → 2</td>
+            <td class="num delta-pos">—</td>
+            <td class="num">662,000</td>
+          </tr>
+        
+          <tr>
+            <td><span class="ticker">VUAG</span> &nbsp; <span class="name">Vanguard S&amp;P 500 (Acc)</span></td>
+            <td class="num">3 → 3</td>
+            <td class="num delta-pos">—</td>
+            <td class="num">651,517</td>
+          </tr>
+        
+          <tr>
+            <td><span class="ticker">AAPL</span> &nbsp; <span class="name">Apple</span></td>
+            <td class="num">4 → 4</td>
+            <td class="num delta-pos">—</td>
+            <td class="num">639,699</td>
+          </tr>
+        
+          <tr>
+            <td><span class="ticker">AMZN</span> &nbsp; <span class="name">Amazon</span></td>
+            <td class="num">5 → 5</td>
+            <td class="num delta-pos">—</td>
+            <td class="num">516,868</td>
+          </tr>
+        
+          <tr>
+            <td><span class="ticker">TSLA</span> &nbsp; <span class="name">Tesla</span></td>
+            <td class="num">6 → 6</td>
+            <td class="num delta-pos">—</td>
+            <td class="num">491,219</td>
+          </tr>
+        
+          <tr>
+            <td><span class="ticker">META</span> &nbsp; <span class="name">Meta Platforms</span></td>
+            <td class="num">7 → 7</td>
+            <td class="num delta-pos">—</td>
+            <td class="num">428,259</td>
+          </tr>
+        
+          <tr>
+            <td><span class="ticker">GOOGL</span> &nbsp; <span class="name">Alphabet (Class A)</span></td>
+            <td class="num">8 → 8</td>
+            <td class="num delta-pos">—</td>
+            <td class="num">417,687</td>
+          </tr>
+        
+          <tr>
+            <td><span class="ticker">VWRP</span> &nbsp; <span class="name">Vanguard FTSE All-World (Acc)</span></td>
+            <td class="num">9 → 9</td>
+            <td class="num delta-pos">—</td>
+            <td class="num">406,031</td>
+          </tr>
+        
+          <tr>
+            <td><span class="ticker">VUSA</span> &nbsp; <span class="name">Vanguard S&amp;P 500 (Dist)</span></td>
+            <td class="num">10 → 10</td>
+            <td class="num delta-pos">—</td>
+            <td class="num">346,576</td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+
+    
+  </div>
+  
+
+  <!-- ============== PERFORMANCE ============== -->
+  <div class="section-marker">
+    <span class="num">Section V</span>
     <span class="label">Performance</span>
   </div>
   <h2>Portfolio vs <em>VUAG.L</em></h2>
@@ -806,7 +1099,7 @@
 
   <!-- ============== TRADE LOG ============== -->
   <div class="section-marker">
-    <span class="num">Section V</span>
+    <span class="num">Section VI</span>
     <span class="label">Trade Log</span>
   </div>
   <h2>Rotation <em>history</em></h2>

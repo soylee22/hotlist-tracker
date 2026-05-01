@@ -138,6 +138,25 @@
   /* Watchlist */
   .watchlist tr td:first-child { width: 8%; }
 
+  /* Movers grid */
+  .movers-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 24px 32px;
+    margin: 8px 0 24px;
+  }
+  .movers-col h3.movers-h {
+    font-family: 'Crimson Pro', Georgia, serif;
+    font-weight: 600; font-size: 16px; letter-spacing: 0.01em;
+    color: var(--ink); margin: 8px 0 8px; padding-bottom: 4px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .movers-table th, .movers-table td {
+    font-size: 13px; padding: 6px 8px;
+  }
+  .movers-table tr td:first-child { width: 56%; }
+  @media (max-width: 760px) {
+    .movers-grid { grid-template-columns: 1fr; }
+  }
+
   /* Trade log */
   .trade-log td:first-child {
     font-family: 'JetBrains Mono', monospace; font-size: 12px;
@@ -369,9 +388,118 @@
   <div class="empty">No watch list data yet.</div>
   {% endif %}
 
-  <!-- ============== PERFORMANCE ============== -->
+  <!-- ============== TOP 100 MOVERS ============== -->
   <div class="section-marker">
     <span class="num">Section IV</span>
+    <span class="label">Movement</span>
+  </div>
+  <h2>Movement in the <em>top 100</em>{% if movers_window %} <small style="font-weight:400;color:#76695E;">— {{ movers_window.window_label }} ({{ movers_window.from_date }} → {{ movers_window.to_date }})</small>{% endif %}</h2>
+
+  {% if movers_window %}
+  <div class="movers-grid">
+    <div class="movers-col">
+      <h3 class="movers-h">Biggest user-count climbers</h3>
+      <table class="watchlist movers-table">
+        <thead>
+          <tr>
+            <th>Stock</th>
+            <th class="num">Δ users</th>
+            <th class="num">Δ %</th>
+            <th class="num">Rank</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for r in movers_window.climbers_users %}
+          <tr>
+            <td><span class="ticker">{{ r.ticker }}</span> &nbsp; <span class="name">{{ r.name }}</span></td>
+            <td class="num delta-pos">{% if r.delta_users is not none %}+{{ '{:,}'.format(r.delta_users) }}{% else %}—{% endif %}</td>
+            <td class="num delta-pos">{% if r.delta_pct is not none %}+{{ '%.2f'|format(r.delta_pct) }}%{% else %}—{% endif %}</td>
+            <td class="num">{{ r.rank_then }} → {{ r.rank_today }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="movers-col">
+      <h3 class="movers-h">Biggest user-count fallers</h3>
+      <table class="watchlist movers-table">
+        <thead>
+          <tr>
+            <th>Stock</th>
+            <th class="num">Δ users</th>
+            <th class="num">Δ %</th>
+            <th class="num">Rank</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for r in movers_window.fallers_users %}
+          <tr>
+            <td><span class="ticker">{{ r.ticker }}</span> &nbsp; <span class="name">{{ r.name }}</span></td>
+            <td class="num delta-neg">{% if r.delta_users is not none %}{{ '{:,}'.format(r.delta_users) }}{% else %}—{% endif %}</td>
+            <td class="num delta-neg">{% if r.delta_pct is not none %}{{ '%.2f'|format(r.delta_pct) }}%{% else %}—{% endif %}</td>
+            <td class="num">{{ r.rank_then }} → {{ r.rank_today }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="movers-col">
+      <h3 class="movers-h">Biggest rank climbers</h3>
+      <table class="watchlist movers-table">
+        <thead>
+          <tr>
+            <th>Stock</th>
+            <th class="num">Rank</th>
+            <th class="num">Δ rank</th>
+            <th class="num">Users</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for r in movers_window.rank_climbers %}
+          <tr>
+            <td><span class="ticker">{{ r.ticker }}</span> &nbsp; <span class="name">{{ r.name }}</span></td>
+            <td class="num">{{ r.rank_then }} → {{ r.rank_today }}</td>
+            <td class="num delta-pos">{% if r.rank_change is not none and r.rank_change > 0 %}↑ {{ r.rank_change }}{% elif r.rank_change == 0 %}—{% else %}{{ r.rank_change }}{% endif %}</td>
+            <td class="num">{{ '{:,}'.format(r.users_today) }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if movers_window.new_entrants %}
+    <div class="movers-col">
+      <h3 class="movers-h">New entrants to the top 100</h3>
+      <table class="watchlist movers-table">
+        <thead>
+          <tr>
+            <th>Stock</th>
+            <th class="num">Rank today</th>
+            <th class="num">Users</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for r in movers_window.new_entrants %}
+          <tr>
+            <td><span class="ticker">{{ r.ticker }}</span> &nbsp; <span class="name">{{ r.name }}</span></td>
+            <td class="num">{{ r.rank_today }}</td>
+            <td class="num">{{ '{:,}'.format(r.users_today) }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  </div>
+  {% else %}
+  <div class="empty">Movement data populates once at least two days of top-100 history exist. Until then this section sits empty.</div>
+  {% endif %}
+
+  <!-- ============== PERFORMANCE ============== -->
+  <div class="section-marker">
+    <span class="num">Section V</span>
     <span class="label">Performance</span>
   </div>
   <h2>Portfolio vs <em>VUAG.L</em></h2>
@@ -390,7 +518,7 @@
 
   <!-- ============== TRADE LOG ============== -->
   <div class="section-marker">
-    <span class="num">Section V</span>
+    <span class="num">Section VI</span>
     <span class="label">Trade Log</span>
   </div>
   <h2>Rotation <em>history</em></h2>
