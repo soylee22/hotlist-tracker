@@ -1,6 +1,6 @@
 {
   "inception_date": "2026-04-28",
-  "last_updated": "2026-05-01",
+  "last_updated": "2026-05-02",
   "rule_version": "1.1",
   "rule_description": "Top 10 single-stock Hotlist names, ownership-weighted (int %) at inception. Drift between rotations. On rotation event (5-day hysteresis confirms a held name is out), FULL rebalance of all 10 positions to that day's ownership weights.",
   "hysteresis_days": 5,
