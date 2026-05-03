@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-05-02",
+  "as_of": "2026-05-03",
   "today_rows": 99,
   "deep_universe": true,
   "available_windows": [
@@ -9,259 +9,15 @@
     "1d": {
       "climbers_users": [
         {
-          "ticker": "INTC",
-          "name": "Intel",
-          "rank_today": 80,
-          "rank_then": 80,
-          "rank_change": 0,
-          "users_today": 100794,
-          "users_then": 100766,
-          "delta_users": 28,
-          "delta_pct": 0.0,
-          "is_excluded": 0
-        },
-        {
-          "ticker": "AMD",
-          "name": "Advanced Micro Devices",
-          "rank_today": 20,
-          "rank_then": 20,
-          "rank_change": 0,
-          "users_today": 222704,
-          "users_then": 222692,
-          "delta_users": 12,
-          "delta_pct": 0.0,
-          "is_excluded": 0
-        },
-        {
-          "ticker": "META",
-          "name": "Meta Platforms",
-          "rank_today": 7,
-          "rank_then": 7,
-          "rank_change": 0,
-          "users_today": 430214,
-          "users_then": 430209,
-          "delta_users": 5,
-          "delta_pct": 0.0,
-          "is_excluded": 0
-        },
-        {
-          "ticker": "GOOGL",
-          "name": "Alphabet (Class A)",
-          "rank_today": 8,
-          "rank_then": 8,
-          "rank_change": 0,
-          "users_today": 418514,
-          "users_then": 418509,
-          "delta_users": 5,
-          "delta_pct": 0.0,
-          "is_excluded": 0
-        },
-        {
-          "ticker": "CVX",
-          "name": "Chevron",
-          "rank_today": 22,
-          "rank_then": 22,
-          "rank_change": 0,
-          "users_today": 211666,
-          "users_then": 211661,
-          "delta_users": 5,
-          "delta_pct": 0.0,
-          "is_excluded": 0
-        },
-        {
-          "ticker": "MA",
-          "name": "Mastercard",
-          "rank_today": 25,
-          "rank_then": 25,
-          "rank_change": 0,
-          "users_today": 195601,
-          "users_then": 195597,
-          "delta_users": 4,
-          "delta_pct": 0.0,
-          "is_excluded": 0
-        },
-        {
-          "ticker": "MU",
-          "name": "Micron Technology",
-          "rank_today": 93,
-          "rank_then": 93,
-          "rank_change": 0,
-          "users_today": 88073,
-          "users_then": 88069,
-          "delta_users": 4,
-          "delta_pct": 0.0,
-          "is_excluded": 0
-        },
-        {
-          "ticker": "MCD",
-          "name": "McDonald's",
-          "rank_today": 19,
-          "rank_then": 19,
-          "rank_change": 0,
-          "users_today": 223759,
-          "users_then": 223756,
-          "delta_users": 3,
-          "delta_pct": 0.0,
-          "is_excluded": 0
-        },
-        {
-          "ticker": "SOFI",
-          "name": "SoFi Technologies",
-          "rank_today": 85,
-          "rank_then": 85,
-          "rank_change": 0,
-          "users_today": 96808,
-          "users_then": 96805,
-          "delta_users": 3,
-          "delta_pct": 0.0,
-          "is_excluded": 0
-        },
-        {
-          "ticker": "PLTR",
-          "name": "Palantir",
-          "rank_today": 14,
-          "rank_then": 14,
-          "rank_change": 0,
-          "users_today": 280777,
-          "users_then": 280775,
-          "delta_users": 2,
-          "delta_pct": 0.0,
-          "is_excluded": 0
-        }
-      ],
-      "fallers_users": [
-        {
-          "ticker": "MSFT",
-          "name": "Microsoft",
-          "rank_today": 2,
-          "rank_then": 2,
-          "rank_change": 0,
-          "users_today": 663400,
-          "users_then": 663407,
-          "delta_users": -7,
-          "delta_pct": -0.0,
-          "is_excluded": 0
-        },
-        {
           "ticker": "NVDA",
           "name": "Nvidia",
           "rank_today": 1,
           "rank_then": 1,
           "rank_change": 0,
           "users_today": 784361,
-          "users_then": 784364,
-          "delta_users": -3,
-          "delta_pct": -0.0,
-          "is_excluded": 0
-        },
-        {
-          "ticker": "PYPL",
-          "name": "PayPal",
-          "rank_today": 94,
-          "rank_then": 94,
-          "rank_change": 0,
-          "users_today": 88062,
-          "users_then": 88065,
-          "delta_users": -3,
-          "delta_pct": -0.0,
-          "is_excluded": 0
-        },
-        {
-          "ticker": "TSLA",
-          "name": "Tesla",
-          "rank_today": 6,
-          "rank_then": 6,
-          "rank_change": 0,
-          "users_today": 490567,
-          "users_then": 490569,
-          "delta_users": -2,
-          "delta_pct": -0.0,
-          "is_excluded": 0
-        },
-        {
-          "ticker": "JNJ",
-          "name": "Johnson & Johnson",
-          "rank_today": 17,
-          "rank_then": 17,
-          "rank_change": 0,
-          "users_today": 226194,
-          "users_then": 226196,
-          "delta_users": -2,
-          "delta_pct": -0.0,
-          "is_excluded": 0
-        },
-        {
-          "ticker": "PEP",
-          "name": "PepsiCo",
-          "rank_today": 23,
-          "rank_then": 23,
-          "rank_change": 0,
-          "users_today": 202251,
-          "users_then": 202253,
-          "delta_users": -2,
-          "delta_pct": -0.0,
-          "is_excluded": 0
-        },
-        {
-          "ticker": "QCOM",
-          "name": "Qualcomm",
-          "rank_today": 75,
-          "rank_then": 75,
-          "rank_change": 0,
-          "users_today": 108192,
-          "users_then": 108194,
-          "delta_users": -2,
-          "delta_pct": -0.0,
-          "is_excluded": 0
-        },
-        {
-          "ticker": "NFLX",
-          "name": "Netflix",
-          "rank_today": 34,
-          "rank_then": 34,
-          "rank_change": 0,
-          "users_today": 160475,
-          "users_then": 160476,
-          "delta_users": -1,
-          "delta_pct": -0.0,
-          "is_excluded": 1
-        },
-        {
-          "ticker": "SBUX",
-          "name": "Starbucks",
-          "rank_today": 65,
-          "rank_then": 65,
-          "rank_change": 0,
-          "users_today": 138691,
-          "users_then": 138692,
-          "delta_users": -1,
-          "delta_pct": -0.0,
-          "is_excluded": 0
-        },
-        {
-          "ticker": "NKE",
-          "name": "Nike",
-          "rank_today": 76,
-          "rank_then": 76,
-          "rank_change": 0,
-          "users_today": 106629,
-          "users_then": 106630,
-          "delta_users": -1,
-          "delta_pct": -0.0,
-          "is_excluded": 0
-        }
-      ],
-      "rank_climbers": [
-        {
-          "ticker": "NVDA",
-          "name": "Nvidia",
-          "rank_today": 1,
-          "rank_then": 1,
-          "rank_change": 0,
-          "users_today": 784361,
-          "users_then": 784364,
-          "delta_users": -3,
-          "delta_pct": -0.0,
+          "users_then": 784361,
+          "delta_users": 0,
+          "delta_pct": 0.0,
           "is_excluded": 0
         },
         {
@@ -271,9 +27,9 @@
           "rank_then": 2,
           "rank_change": 0,
           "users_today": 663400,
-          "users_then": 663407,
-          "delta_users": -7,
-          "delta_pct": -0.0,
+          "users_then": 663400,
+          "delta_users": 0,
+          "delta_pct": 0.0,
           "is_excluded": 0
         },
         {
@@ -319,9 +75,9 @@
           "rank_then": 6,
           "rank_change": 0,
           "users_today": 490567,
-          "users_then": 490569,
-          "delta_users": -2,
-          "delta_pct": -0.0,
+          "users_then": 490567,
+          "delta_users": 0,
+          "delta_pct": 0.0,
           "is_excluded": 0
         },
         {
@@ -331,8 +87,8 @@
           "rank_then": 7,
           "rank_change": 0,
           "users_today": 430214,
-          "users_then": 430209,
-          "delta_users": 5,
+          "users_then": 430214,
+          "delta_users": 0,
           "delta_pct": 0.0,
           "is_excluded": 0
         },
@@ -343,8 +99,252 @@
           "rank_then": 8,
           "rank_change": 0,
           "users_today": 418514,
-          "users_then": 418509,
-          "delta_users": 5,
+          "users_then": 418514,
+          "delta_users": 0,
+          "delta_pct": 0.0,
+          "is_excluded": 0
+        },
+        {
+          "ticker": "VWRP",
+          "name": "Vanguard FTSE All-World (Acc)",
+          "rank_today": 9,
+          "rank_then": 9,
+          "rank_change": 0,
+          "users_today": 406555,
+          "users_then": 406555,
+          "delta_users": 0,
+          "delta_pct": 0.0,
+          "is_excluded": 1
+        },
+        {
+          "ticker": "VUSA",
+          "name": "Vanguard S&P 500 (Dist)",
+          "rank_today": 10,
+          "rank_then": 10,
+          "rank_change": 0,
+          "users_today": 346509,
+          "users_then": 346509,
+          "delta_users": 0,
+          "delta_pct": 0.0,
+          "is_excluded": 1
+        }
+      ],
+      "fallers_users": [
+        {
+          "ticker": "NVDA",
+          "name": "Nvidia",
+          "rank_today": 1,
+          "rank_then": 1,
+          "rank_change": 0,
+          "users_today": 784361,
+          "users_then": 784361,
+          "delta_users": 0,
+          "delta_pct": 0.0,
+          "is_excluded": 0
+        },
+        {
+          "ticker": "MSFT",
+          "name": "Microsoft",
+          "rank_today": 2,
+          "rank_then": 2,
+          "rank_change": 0,
+          "users_today": 663400,
+          "users_then": 663400,
+          "delta_users": 0,
+          "delta_pct": 0.0,
+          "is_excluded": 0
+        },
+        {
+          "ticker": "VUAG",
+          "name": "Vanguard S&P 500 (Acc)",
+          "rank_today": 3,
+          "rank_then": 3,
+          "rank_change": 0,
+          "users_today": 651985,
+          "users_then": 651985,
+          "delta_users": 0,
+          "delta_pct": 0.0,
+          "is_excluded": 1
+        },
+        {
+          "ticker": "AAPL",
+          "name": "Apple",
+          "rank_today": 4,
+          "rank_then": 4,
+          "rank_change": 0,
+          "users_today": 640631,
+          "users_then": 640631,
+          "delta_users": 0,
+          "delta_pct": 0.0,
+          "is_excluded": 0
+        },
+        {
+          "ticker": "AMZN",
+          "name": "Amazon",
+          "rank_today": 5,
+          "rank_then": 5,
+          "rank_change": 0,
+          "users_today": 517445,
+          "users_then": 517445,
+          "delta_users": 0,
+          "delta_pct": 0.0,
+          "is_excluded": 0
+        },
+        {
+          "ticker": "TSLA",
+          "name": "Tesla",
+          "rank_today": 6,
+          "rank_then": 6,
+          "rank_change": 0,
+          "users_today": 490567,
+          "users_then": 490567,
+          "delta_users": 0,
+          "delta_pct": 0.0,
+          "is_excluded": 0
+        },
+        {
+          "ticker": "META",
+          "name": "Meta Platforms",
+          "rank_today": 7,
+          "rank_then": 7,
+          "rank_change": 0,
+          "users_today": 430214,
+          "users_then": 430214,
+          "delta_users": 0,
+          "delta_pct": 0.0,
+          "is_excluded": 0
+        },
+        {
+          "ticker": "GOOGL",
+          "name": "Alphabet (Class A)",
+          "rank_today": 8,
+          "rank_then": 8,
+          "rank_change": 0,
+          "users_today": 418514,
+          "users_then": 418514,
+          "delta_users": 0,
+          "delta_pct": 0.0,
+          "is_excluded": 0
+        },
+        {
+          "ticker": "VWRP",
+          "name": "Vanguard FTSE All-World (Acc)",
+          "rank_today": 9,
+          "rank_then": 9,
+          "rank_change": 0,
+          "users_today": 406555,
+          "users_then": 406555,
+          "delta_users": 0,
+          "delta_pct": 0.0,
+          "is_excluded": 1
+        },
+        {
+          "ticker": "VUSA",
+          "name": "Vanguard S&P 500 (Dist)",
+          "rank_today": 10,
+          "rank_then": 10,
+          "rank_change": 0,
+          "users_today": 346509,
+          "users_then": 346509,
+          "delta_users": 0,
+          "delta_pct": 0.0,
+          "is_excluded": 1
+        }
+      ],
+      "rank_climbers": [
+        {
+          "ticker": "NVDA",
+          "name": "Nvidia",
+          "rank_today": 1,
+          "rank_then": 1,
+          "rank_change": 0,
+          "users_today": 784361,
+          "users_then": 784361,
+          "delta_users": 0,
+          "delta_pct": 0.0,
+          "is_excluded": 0
+        },
+        {
+          "ticker": "MSFT",
+          "name": "Microsoft",
+          "rank_today": 2,
+          "rank_then": 2,
+          "rank_change": 0,
+          "users_today": 663400,
+          "users_then": 663400,
+          "delta_users": 0,
+          "delta_pct": 0.0,
+          "is_excluded": 0
+        },
+        {
+          "ticker": "VUAG",
+          "name": "Vanguard S&P 500 (Acc)",
+          "rank_today": 3,
+          "rank_then": 3,
+          "rank_change": 0,
+          "users_today": 651985,
+          "users_then": 651985,
+          "delta_users": 0,
+          "delta_pct": 0.0,
+          "is_excluded": 1
+        },
+        {
+          "ticker": "AAPL",
+          "name": "Apple",
+          "rank_today": 4,
+          "rank_then": 4,
+          "rank_change": 0,
+          "users_today": 640631,
+          "users_then": 640631,
+          "delta_users": 0,
+          "delta_pct": 0.0,
+          "is_excluded": 0
+        },
+        {
+          "ticker": "AMZN",
+          "name": "Amazon",
+          "rank_today": 5,
+          "rank_then": 5,
+          "rank_change": 0,
+          "users_today": 517445,
+          "users_then": 517445,
+          "delta_users": 0,
+          "delta_pct": 0.0,
+          "is_excluded": 0
+        },
+        {
+          "ticker": "TSLA",
+          "name": "Tesla",
+          "rank_today": 6,
+          "rank_then": 6,
+          "rank_change": 0,
+          "users_today": 490567,
+          "users_then": 490567,
+          "delta_users": 0,
+          "delta_pct": 0.0,
+          "is_excluded": 0
+        },
+        {
+          "ticker": "META",
+          "name": "Meta Platforms",
+          "rank_today": 7,
+          "rank_then": 7,
+          "rank_change": 0,
+          "users_today": 430214,
+          "users_then": 430214,
+          "delta_users": 0,
+          "delta_pct": 0.0,
+          "is_excluded": 0
+        },
+        {
+          "ticker": "GOOGL",
+          "name": "Alphabet (Class A)",
+          "rank_today": 8,
+          "rank_then": 8,
+          "rank_change": 0,
+          "users_today": 418514,
+          "users_then": 418514,
+          "delta_users": 0,
           "delta_pct": 0.0,
           "is_excluded": 0
         },
@@ -381,9 +381,9 @@
           "rank_then": 1,
           "rank_change": 0,
           "users_today": 784361,
-          "users_then": 784364,
-          "delta_users": -3,
-          "delta_pct": -0.0,
+          "users_then": 784361,
+          "delta_users": 0,
+          "delta_pct": 0.0,
           "is_excluded": 0
         },
         {
@@ -393,9 +393,9 @@
           "rank_then": 2,
           "rank_change": 0,
           "users_today": 663400,
-          "users_then": 663407,
-          "delta_users": -7,
-          "delta_pct": -0.0,
+          "users_then": 663400,
+          "delta_users": 0,
+          "delta_pct": 0.0,
           "is_excluded": 0
         },
         {
@@ -441,9 +441,9 @@
           "rank_then": 6,
           "rank_change": 0,
           "users_today": 490567,
-          "users_then": 490569,
-          "delta_users": -2,
-          "delta_pct": -0.0,
+          "users_then": 490567,
+          "delta_users": 0,
+          "delta_pct": 0.0,
           "is_excluded": 0
         },
         {
@@ -453,8 +453,8 @@
           "rank_then": 7,
           "rank_change": 0,
           "users_today": 430214,
-          "users_then": 430209,
-          "delta_users": 5,
+          "users_then": 430214,
+          "delta_users": 0,
           "delta_pct": 0.0,
           "is_excluded": 0
         },
@@ -465,8 +465,8 @@
           "rank_then": 8,
           "rank_change": 0,
           "users_today": 418514,
-          "users_then": 418509,
-          "delta_users": 5,
+          "users_then": 418514,
+          "delta_users": 0,
           "delta_pct": 0.0,
           "is_excluded": 0
         },
@@ -496,12 +496,12 @@
         }
       ],
       "new_entrants": [],
-      "from_date": "2026-05-01",
+      "from_date": "2026-05-02",
       "from_rows": 99,
-      "to_date": "2026-05-02",
+      "to_date": "2026-05-03",
       "to_rows": 99,
       "label": "1d"
     }
   },
-  "history_days": 5
+  "history_days": 6
 }
